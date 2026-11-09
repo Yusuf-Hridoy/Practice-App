@@ -1,0 +1,74 @@
+[
+  {
+    "symbol": "NOVA",
+    "name": "Nova Energy",
+    "about": "Makes solar panels.",
+    "basePriceCents": 5210,
+    "stepMaxBps": 30,
+    "badgeBg": "#2A2410",
+    "badgeText": "#F5C451"
+  },
+  {
+    "symbol": "KRYL",
+    "name": "Kryl Robotics",
+    "about": "Makes robot arms for factories.",
+    "basePriceCents": 14236,
+    "stepMaxBps": 20,
+    "badgeBg": "#13243A",
+    "badgeText": "#A9CEFF"
+  },
+  {
+    "symbol": "BRISK",
+    "name": "Brisk Foods",
+    "about": "Sells ready meals.",
+    "basePriceCents": 1840,
+    "stepMaxBps": 35,
+    "badgeBg": "#2E1717",
+    "badgeText": "#FF9B94"
+  },
+  {
+    "symbol": "LUMA",
+    "name": "Luma Health",
+    "about": "Runs small health clinics.",
+    "basePriceCents": 2610,
+    "stepMaxBps": 40,
+    "badgeBg": "#0F2A20",
+    "badgeText": "#3DDC97"
+  },
+  {
+    "symbol": "OAKFIN",
+    "name": "Oak Finance",
+    "about": "A small online bank.",
+    "basePriceCents": 6102,
+    "stepMaxBps": 15,
+    "badgeBg": "#221A33",
+    "badgeText": "#C9B6FF"
+  },
+  {
+    "symbol": "PIXEL",
+    "name": "Pixel Games",
+    "about": "Makes mobile games.",
+    "basePriceCents": 985,
+    "stepMaxBps": 60,
+    "badgeBg": "#2A2410",
+    "badgeText": "#F5C451"
+  },
+  {
+    "symbol": "TERRA",
+    "name": "Terra Farms",
+    "about": "Grows vegetables in greenhouses.",
+    "basePriceCents": 3470,
+    "stepMaxBps": 30,
+    "badgeBg": "#13243A",
+    "badgeText": "#A9CEFF"
+  },
+  {
+    "symbol": "VELO",
+    "name": "Velo Bikes",
+    "about": "Makes electric bikes.",
+    "basePriceCents": 7745,
+    "stepMaxBps": 25,
+    "badgeBg": "#2E1717",
+    "badgeText": "#FF9B94"
+  }
+]

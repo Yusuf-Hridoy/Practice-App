@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page not found &middot; Tradeloom</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <main id="page"></main>
+  <script type="module">
+    import { TEXT } from '/js/ui-text.js';
+    import { TEST_IDS } from '/js/test-ids.js';
+    import { href } from '/js/app-links.js';
+
+    document.getElementById('page').innerHTML = `
+      <div class="wrap stack">
+        <div class="card stack-sm" data-testid="${TEST_IDS.notFound}">
+          <h1>${TEXT.notFound.title}</h1>
+          <p class="muted">${TEXT.notFound.body}</p>
+          <p><a class="btn btn-accent" href="${href('market')}">${TEXT.common.backToMarket}</a></p>
+        </div>
+      </div>
+    `;
+  </script>
+</body>
+</html>
