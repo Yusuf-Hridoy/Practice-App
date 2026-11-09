@@ -6,6 +6,7 @@ export const TEST_IDS = Object.freeze({
   topMenu: 'top-menu',
   menuLinkMarket: 'menu-link-market',
   menuLinkPortfolio: 'menu-link-portfolio',
+  menuLinkWatchlist: 'menu-link-watchlist',
   menuLinkWallet: 'menu-link-wallet',
   menuLinkRules: 'menu-link-rules',
   marketStatus: 'market-status',
@@ -41,6 +42,8 @@ export const TEST_IDS = Object.freeze({
   marketLoading: 'market-loading',
   marketError: 'market-error',
   marketRetry: 'market-retry',
+  watchStar: 'watch-star',
+  watchlistFullError: 'watchlist-full-error',
 
   // Stock page
   stockNotFound: 'stock-not-found',
@@ -111,6 +114,47 @@ export const TEST_IDS = Object.freeze({
   historyTable: 'history-table',
   historyRow: 'history-row',
   historyDownload: 'history-download',
+
+  // Watchlist, top of the page
+  browserAlertsButton: 'browser-alerts-button',
+  browserAlertsStatus: 'browser-alerts-status',
+  removeAll: 'remove-all',
+  watchlistAddSelect: 'watchlist-add-select',
+  watchlistAddSubmit: 'watchlist-add-submit',
+  watchlistAddError: 'watchlist-add-error',
+  watchlistStatus: 'watchlist-status',
+  watchlistEmpty: 'watchlist-empty',
+
+  // Watchlist rows
+  watchlistRow: 'watchlist-row',
+  watchlistDragHandle: 'watchlist-drag-handle',
+  watchlistPrice: 'watchlist-price',
+  watchlistChange: 'watchlist-change',
+  watchlistAlertStatus: 'watchlist-alert-status',
+  watchlistAlertOpen: 'watchlist-alert-open',
+  watchlistRemove: 'watchlist-remove',
+
+  // Alert editor
+  alertEditor: 'alert-editor',
+  alertEditorClosed: 'alert-editor-closed',
+  alertPriceNow: 'alert-price-now',
+  alertDirectionAbove: 'alert-direction-above',
+  alertDirectionBelow: 'alert-direction-below',
+  alertPriceSlider: 'alert-price-slider',
+  alertPriceInput: 'alert-price-input',
+  alertPopupCheckbox: 'alert-popup-checkbox',
+  alertBrowserCheckbox: 'alert-browser-checkbox',
+  alertBrowserHint: 'alert-browser-hint',
+  alertSave: 'alert-save',
+  alertDelete: 'alert-delete',
+  alertClose: 'alert-close',
+  alertError: 'alert-error',
+  alertMessage: 'alert-message',
+
+  // Pop-up messages
+  toastArea: 'toast-area',
+  toast: 'toast',
+  toastClose: 'toast-close',
 
   // Rules and 404
   rulesCard: 'rules-card',

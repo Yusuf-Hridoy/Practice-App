@@ -1,6 +1,13 @@
 // Market page: every stock, with live prices.
 
-import { TEXT, noMatchMessage, marketClosedMessage, sharesWord } from '../ui-text.js';
+import {
+  TEXT,
+  noMatchMessage,
+  marketClosedMessage,
+  sharesWord,
+  addStarLabel,
+  removeStarLabel,
+} from '../ui-text.js';
 import { TEST_IDS } from '../test-ids.js';
 import { href } from '../app-links.js';
 import { requireSession } from '../app-session.js';
@@ -10,14 +17,18 @@ import { marketStatus } from '../market-hours.js';
 import { priceNowCents, openPriceCents, changeSinceOpen, chartPoints, priceMap } from '../price-engine.js';
 import { createMiniChart } from '../price-chart.js';
 import { totalWorthCents, stocksChangeSinceOpenCents, ownedShares } from '../trade-rules.js';
+import { readWatchlist, changeWatchlist } from '../watchlist-storage.js';
+import { addSymbol, removeSymbol, isOnWatchlist } from '../watchlist-rules.js';
 
 const REFRESH_MS = 5000;
 
+let session = null;
 let account = null;
 let stocks = [];
 let rowParts = new Map();
 let activeFilter = 'all';
 let refreshTimer = null;
+let watchlist = { symbols: [], alerts: {} };
 
 function shellHtml() {
   return `
@@ -58,6 +69,8 @@ function shellHtml() {
 
         <p class="muted small">${TEXT.market.refreshNote}</p>
 
+        <p class="error-text" role="alert" data-testid="${TEST_IDS.watchlistFullError}"></p>
+
         <div data-testid="${TEST_IDS.marketLoading}" class="stack-sm">
           <span class="skeleton-bar"></span>
           <span class="skeleton-bar"></span>
@@ -68,6 +81,7 @@ function shellHtml() {
           <table data-testid="${TEST_IDS.marketTable}">
             <thead>
               <tr>
+                <th>${TEXT.market.colWatch}</th>
                 <th>${TEXT.market.colStock}</th>
                 <th class="right">${TEXT.market.colPrice}</th>
                 <th class="right">${TEXT.market.colToday}</th>
@@ -102,6 +116,11 @@ function rowHtml(stock) {
   return `
     <tr data-testid="${TEST_IDS.marketRow}" data-symbol="${stock.symbol}">
       <td>
+        <button type="button" class="star-button" data-testid="${TEST_IDS.watchStar}" aria-pressed="false">
+          ${TEXT.watchlist.starOff}
+        </button>
+      </td>
+      <td>
         <div class="stock-cell">
           <span class="badge" style="background: ${stock.badgeBg}; color: ${stock.badgeText};" aria-hidden="true">
             ${stock.symbol.slice(0, 2)}
@@ -124,6 +143,37 @@ function rowHtml(stock) {
   `;
 }
 
+// The star shows whether the stock is on the watchlist.
+function drawStar(symbol) {
+  const parts = rowParts.get(symbol);
+  if (!parts) return;
+  const on = isOnWatchlist(watchlist, symbol);
+  parts.star.setAttribute('aria-pressed', on ? 'true' : 'false');
+  parts.star.setAttribute('aria-label', on ? removeStarLabel(symbol) : addStarLabel(symbol));
+  parts.star.className = on ? 'star-button star-on' : 'star-button star-off';
+  parts.star.textContent = on ? TEXT.watchlist.starOn : TEXT.watchlist.starOff;
+}
+
+function toggleStar(symbol) {
+  const fullError = document.querySelector(`[data-testid="${TEST_IDS.watchlistFullError}"]`);
+  fullError.textContent = '';
+
+  const result = changeWatchlist(
+    session.user.email,
+    session.user.watchlistStart,
+    stocks.map((stock) => stock.symbol),
+    (fresh) => (isOnWatchlist(fresh, symbol) ? removeSymbol(fresh, symbol) : addSymbol(fresh, symbol)),
+  );
+
+  if (result && result.ok === false) {
+    fullError.textContent = result.error;
+    return;
+  }
+
+  watchlist = result.watchlist;
+  for (const stock of stocks) drawStar(stock.symbol);
+}
+
 function buildRows() {
   const body = document.getElementById('market-rows');
   body.innerHTML = stocks.map(rowHtml).join('');
@@ -135,12 +185,17 @@ function buildRows() {
     row.querySelector('.row-chart').append(mini.element);
     rowParts.set(stock.symbol, {
       row,
+      star: row.querySelector(`[data-testid="${TEST_IDS.watchStar}"]`),
       price: row.querySelector(`[data-testid="${TEST_IDS.rowPrice}"]`),
       change: row.querySelector(`[data-testid="${TEST_IDS.rowChange}"]`),
       owned: row.querySelector(`[data-testid="${TEST_IDS.rowOwned}"]`),
       mini,
       changeCents: 0,
     });
+
+    const symbol = stock.symbol;
+    rowParts.get(symbol).star.addEventListener('click', () => toggleStar(symbol));
+    drawStar(symbol);
   }
 
   document.getElementById('market-table-box').hidden = false;
@@ -302,13 +357,19 @@ async function loadStocks() {
     return;
   }
 
+  watchlist = readWatchlist(
+    session.user.email,
+    session.user.watchlistStart,
+    stocks.map((stock) => stock.symbol),
+  );
+
   buildRows();
   refresh();
   if (refreshTimer === null) refreshTimer = window.setInterval(refresh, REFRESH_MS);
 }
 
 async function start() {
-  const session = await requireSession();
+  session = await requireSession();
   if (!session) return;
 
   account = session.account;

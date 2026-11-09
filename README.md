@@ -42,6 +42,22 @@ Password for both: `Play123!`
 | `trader@tradeloom.test` | $8,808.40 cash, 20 LUMA and 5 KRYL |
 | `newbie@tradeloom.test` | $10,000 cash, no stocks |
 
+## Watchlist
+
+The Watchlist page keeps up to **6 stocks** in whatever order you drag them into, with
+**one price alert per stock**. Add a stock from the select on that page, or tap the star on
+any Market row.
+
+An alert is either **Above** or **Below** a price you pick, somewhere between 80% and 120%
+of the price at the moment you open the alert editor. Prices are checked every 5 seconds on
+every page. When the price crosses your alert it **fires once**: you get a pop-up message in
+the app (and a browser notification, if you turned those on), and the alert then shows
+**Hit** until you save a new one.
+
+The `trader@tradeloom.test` account starts with NOVA, PIXEL, BRISK and OAKFIN on its
+watchlist, and one alert set for NOVA above $55.00. `newbie@tradeloom.test` starts with an
+empty watchlist. **Start over** on the Wallet page clears the watchlist back to that start.
+
 ## Test switches
 
 | Switch | What it does |

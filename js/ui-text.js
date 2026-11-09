@@ -17,6 +17,7 @@ export const TEXT = Object.freeze({
   menu: {
     market: 'Market',
     portfolio: 'Portfolio',
+    watchlist: 'Watchlist',
     wallet: 'Wallet',
     rules: 'Rules',
     marketOpen: 'Market open',
@@ -62,6 +63,7 @@ export const TEXT = Object.freeze({
     filterDown: 'Going down',
     filterOwned: 'I own',
     refreshNote: 'Prices update every 5 seconds',
+    colWatch: 'Watch',
     colStock: 'Stock',
     colPrice: 'Price',
     colToday: 'Today',
@@ -182,11 +184,68 @@ export const TEXT = Object.freeze({
       { key: 'market-hours', title: 'Market hours', body: 'Open Monday to Friday, 9:00 to 17:00 Dhaka time. When closed, you can look but not trade.' },
       { key: 'prices', title: 'Prices', body: 'Move a little every 5 seconds. Made-up, but the same every time with the same seed.' },
       { key: 'your-data', title: 'Your data', body: 'Saved in your browser only. A new browser starts fresh.' },
+      { key: 'watchlist', title: 'Watchlist', body: 'Up to 6 stocks. One alert per stock. An alert fires once when the price crosses it, then shows Hit.' },
     ],
     switchesTitle: 'Test switches',
     switchName: '?seed=42',
     switchBody: 'Same prices every time',
     switchesNote: 'More switches come in a later version.',
+  },
+
+  watchlist: {
+    title: 'Watchlist',
+    intro: 'Stocks you want to keep an eye on. Drag to change the order. Up to 6 stocks.',
+    browserAlertsButton: 'Turn on browser alerts',
+    removeAll: 'Remove all',
+    removeAllConfirm: 'Remove all stocks from your watchlist?',
+    addLabel: 'Add a stock',
+    add: 'Add',
+    full: 'Your watchlist is full. Remove a stock to add another.',
+    emptyTitle: 'Your watchlist is empty',
+    emptyBody: 'Add a stock above, or tap the ☆ on the Market page.',
+    colPrice: 'Price',
+    colToday: 'Today',
+    alertButton: 'Alert',
+    noAlert: 'No alert',
+    dragHandle: '⋮⋮',
+    removeMark: '×',
+    starOn: '★',
+    starOff: '☆',
+    keyHintPress: 'Press',
+    keyHintSearch: 'to search',
+    keyHintDot: '·',
+    keyHintClose: 'to close',
+    keySlash: '/',
+    keyEsc: 'Esc',
+  },
+
+  browserAlerts: {
+    granted: 'Browser alerts are on.',
+    denied: "Your browser blocked alerts. You'll still see pop-ups in the app.",
+    off: 'Browser alerts are off.',
+    unsupported: "This browser can't show alerts.",
+  },
+
+  alertEditor: {
+    closedHint: 'Press Alert on a stock to set a price alert.',
+    legend: 'Alert me when the price goes',
+    above: 'Above',
+    below: 'Below',
+    priceLabel: 'Alert price',
+    priceInputLabel: 'Alert price in dollars',
+    popupLabel: 'Show a pop-up message in the app',
+    browserLabel: 'Also send a browser notification',
+    browserHint: 'Turn on browser alerts first.',
+    save: 'Save alert',
+    delete: 'Delete alert',
+    close: 'Close',
+    deleted: 'Alert deleted.',
+    noChannel: 'Pick at least one way to be told.',
+    note: 'An alert fires once, then shows Hit. Prices are checked every 5 seconds.',
+  },
+
+  toast: {
+    close: 'Close message',
   },
 
   notFound: {
@@ -341,4 +400,94 @@ export function chartLabelHour(symbol, fromText, toText) {
 
 export function allocationLegendItem(name, percentText) {
   return `${name} ${percentText}`;
+}
+
+// --- watchlist ---
+
+export function watchlistOptionText(symbol, name) {
+  return `${symbol} · ${name}`;
+}
+
+export function moveHandleLabel(symbol) {
+  return `Move ${symbol}`;
+}
+
+export function removeFromWatchlistLabel(symbol) {
+  return `Remove ${symbol}`;
+}
+
+export function setAlertLabel(symbol) {
+  return `Set alert for ${symbol}`;
+}
+
+export function addStarLabel(symbol) {
+  return `Add ${symbol} to watchlist`;
+}
+
+export function removeStarLabel(symbol) {
+  return `Remove ${symbol} from watchlist`;
+}
+
+export function movedMessage(symbol, position, total) {
+  return `${symbol} moved to position ${position} of ${total}.`;
+}
+
+export function removedFromWatchlistMessage(symbol) {
+  return `${symbol} removed from your watchlist.`;
+}
+
+export function alertPillText(directionWord, priceText) {
+  return `${directionWord} ${priceText}`;
+}
+
+export function alertHitAtPill(clockText) {
+  return `Hit at ${clockText}`;
+}
+
+export function alertHitOnPill(dateText) {
+  return `Hit on ${dateText}`;
+}
+
+// --- alert editor ---
+
+export function alertEditorTitle(symbol) {
+  return `Price alert for ${symbol}`;
+}
+
+export function alertPriceNowLine(priceText) {
+  return `Price now: ${priceText}`;
+}
+
+export function alertRangeEndLow(priceText) {
+  return `${priceText} (-20%)`;
+}
+
+export function alertRangeEndHigh(priceText) {
+  return `${priceText} (+20%)`;
+}
+
+export function alertRangeError(lowText, highText) {
+  return `Enter a price between ${lowText} and ${highText}.`;
+}
+
+export function alertAboveError(priceText) {
+  return `For an Above alert, pick a price higher than ${priceText}.`;
+}
+
+export function alertBelowError(priceText) {
+  return `For a Below alert, pick a price lower than ${priceText}.`;
+}
+
+export function alertSavedMessage(symbol, directionWord, priceText) {
+  return `Alert saved. We'll tell you when ${symbol} goes ${directionWord} ${priceText}.`;
+}
+
+// --- pop-up messages ---
+
+export function toastTitle(symbol, directionWord, priceText) {
+  return `${symbol} went ${directionWord} ${priceText}`;
+}
+
+export function toastDetail(priceText) {
+  return `Now ${priceText}.`;
 }

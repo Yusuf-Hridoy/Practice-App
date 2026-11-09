@@ -58,6 +58,28 @@ export function formatDhakaTime(timeValue, nowMs = Date.now()) {
   return `${p.day} ${TIME_TEXT.months[p.month - 1]} ${clock}`;
 }
 
+export function isSameDhakaDay(timeValue, nowMs = Date.now()) {
+  const ms = typeof timeValue === 'number' ? timeValue : Date.parse(timeValue);
+  if (Number.isNaN(ms)) return false;
+  return dhakaDateKey(ms) === dhakaDateKey(nowMs);
+}
+
+// "10:42" in Dhaka time.
+export function dhakaClockOf(timeValue) {
+  const ms = typeof timeValue === 'number' ? timeValue : Date.parse(timeValue);
+  if (Number.isNaN(ms)) return '';
+  const p = dhakaParts(ms);
+  return `${pad2(p.hours)}:${pad2(p.minutes)}`;
+}
+
+// "3 Nov" in Dhaka time.
+export function dhakaDayOf(timeValue) {
+  const ms = typeof timeValue === 'number' ? timeValue : Date.parse(timeValue);
+  if (Number.isNaN(ms)) return '';
+  const p = dhakaParts(ms);
+  return `${p.day} ${TIME_TEXT.months[p.month - 1]}`;
+}
+
 // Plain "YYYY-MM-DD HH:MM" in Dhaka time, for the CSV file.
 export function csvDhakaTime(timeValue) {
   const ms = typeof timeValue === 'number' ? timeValue : Date.parse(timeValue);

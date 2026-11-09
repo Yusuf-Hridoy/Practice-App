@@ -9,14 +9,63 @@
       "cashCents": 880840,
       "totalAddedCents": 1000000,
       "holdings": {
-        "LUMA": { "shares": 20, "totalPaidCents": 48800 },
-        "KRYL": { "shares": 5, "totalPaidCents": 70360 }
+        "LUMA": {
+          "shares": 20,
+          "totalPaidCents": 48800
+        },
+        "KRYL": {
+          "shares": 5,
+          "totalPaidCents": 70360
+        }
       },
       "history": [
-        { "id": "h1", "time": "2026-11-02T15:02:00+06:00", "type": "start", "amountCents": 1000000, "cashAfterCents": 1000000 },
-        { "id": "h2", "time": "2026-11-02T15:10:00+06:00", "type": "buy", "symbol": "LUMA", "shares": 20, "priceCents": 2440, "amountCents": -48800, "cashAfterCents": 951200 },
-        { "id": "h3", "time": "2026-11-03T11:42:00+06:00", "type": "buy", "symbol": "KRYL", "shares": 5, "priceCents": 14072, "amountCents": -70360, "cashAfterCents": 880840 }
+        {
+          "id": "h1",
+          "time": "2026-11-02T15:02:00+06:00",
+          "type": "start",
+          "amountCents": 1000000,
+          "cashAfterCents": 1000000
+        },
+        {
+          "id": "h2",
+          "time": "2026-11-02T15:10:00+06:00",
+          "type": "buy",
+          "symbol": "LUMA",
+          "shares": 20,
+          "priceCents": 2440,
+          "amountCents": -48800,
+          "cashAfterCents": 951200
+        },
+        {
+          "id": "h3",
+          "time": "2026-11-03T11:42:00+06:00",
+          "type": "buy",
+          "symbol": "KRYL",
+          "shares": 5,
+          "priceCents": 14072,
+          "amountCents": -70360,
+          "cashAfterCents": 880840
+        }
       ]
+    },
+    "watchlistStart": {
+      "symbols": [
+        "NOVA",
+        "PIXEL",
+        "BRISK",
+        "OAKFIN"
+      ],
+      "alerts": {
+        "NOVA": {
+          "direction": "above",
+          "priceCents": 5500,
+          "popup": true,
+          "browser": false,
+          "status": "waiting",
+          "hitAt": null,
+          "hitPriceCents": null
+        }
+      }
     }
   },
   {
@@ -30,8 +79,18 @@
       "totalAddedCents": 1000000,
       "holdings": {},
       "history": [
-        { "id": "h1", "time": "2026-11-02T09:00:00+06:00", "type": "start", "amountCents": 1000000, "cashAfterCents": 1000000 }
+        {
+          "id": "h1",
+          "time": "2026-11-02T09:00:00+06:00",
+          "type": "start",
+          "amountCents": 1000000,
+          "cashAfterCents": 1000000
+        }
       ]
+    },
+    "watchlistStart": {
+      "symbols": [],
+      "alerts": {}
     }
   }
 ]

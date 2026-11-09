@@ -12,6 +12,7 @@ import { TEST_IDS } from '../test-ids.js';
 import { requireSession } from '../app-session.js';
 import { renderTopMenu } from '../top-menu.js';
 import { writeAccount, resetAccount, readAccount } from '../account-storage.js';
+import { resetWatchlist } from '../watchlist-storage.js';
 import {
   formatMoney,
   formatSignedMoney,
@@ -236,6 +237,7 @@ function wire() {
   pick(TEST_IDS.startOverConfirm).addEventListener('click', () => {
     reloadAccount();
     account = resetAccount(session.user.email, session.user.start);
+    resetWatchlist(session.user.email, session.user.watchlistStart);
     pick(TEST_IDS.startOverDialog).close();
     menu.setCash(account.cashCents);
     pick(TEST_IDS.addMessage).textContent = '';

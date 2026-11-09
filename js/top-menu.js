@@ -6,6 +6,8 @@ import { href } from './app-links.js';
 import { formatMoney } from './money-format.js';
 import { marketStatus } from './market-hours.js';
 import { logout } from './app-session.js';
+import { startAlertChecker } from './alert-checker.js';
+import { startKeyboardShortcuts } from './keyboard-shortcuts.js';
 
 export function logoHtml(linkTo = 'market') {
   return `
@@ -46,6 +48,7 @@ export function renderTopMenu({ page, user, account, nowMs = Date.now() }) {
         <nav class="menu-left" aria-label="${TEXT.menu.navLabel}">
           ${menuLinkHtml('market', TEXT.menu.market, TEST_IDS.menuLinkMarket, page)}
           ${menuLinkHtml('portfolio', TEXT.menu.portfolio, TEST_IDS.menuLinkPortfolio, page)}
+          ${menuLinkHtml('watchlist', TEXT.menu.watchlist, TEST_IDS.menuLinkWatchlist, page)}
           ${menuLinkHtml('wallet', TEXT.menu.wallet, TEST_IDS.menuLinkWallet, page)}
           ${menuLinkHtml('rules', TEXT.menu.rules, TEST_IDS.menuLinkRules, page)}
         </nav>
@@ -80,6 +83,10 @@ export function renderTopMenu({ page, user, account, nowMs = Date.now() }) {
   }
 
   const timer = window.setInterval(refreshStatus, 5000);
+
+  // Price alerts and the keyboard shortcuts run on every logged-in page.
+  startAlertChecker(user);
+  startKeyboardShortcuts(page);
 
   return {
     setCash(cents) {

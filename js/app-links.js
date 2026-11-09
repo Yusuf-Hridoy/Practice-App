@@ -9,6 +9,7 @@ const PAGE_FILES = Object.freeze({
   market: 'market',
   stock: 'stock',
   portfolio: 'portfolio',
+  watchlist: 'watchlist',
   wallet: 'wallet',
   rules: 'rules',
   notFound: '404',
