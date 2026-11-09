@@ -24,7 +24,7 @@ import { TEST_IDS } from '../test-ids.js';
 import { href } from '../app-links.js';
 import { requireSession } from '../app-session.js';
 import { renderTopMenu } from '../top-menu.js';
-import { writeAccount } from '../account-storage.js';
+import { writeAccount, readAccount } from '../account-storage.js';
 import {
   formatMoney,
   formatSignedMoney,
@@ -65,21 +65,52 @@ let chart = null;
 let chartRange = 'today';
 let mode = 'buy';
 let reviewPriceCents = 0;
+let refreshTimer = null;
 
 function queryValue(name) {
   return new URLSearchParams(window.location.search).get(name) || '';
 }
 
-function notFoundHtml(symbolText) {
-  return `
+// Reads the saved account again, so a second tab cannot be overwritten.
+function reloadAccount() {
+  account = readAccount(session.user.email, session.user.start);
+  return account;
+}
+
+// The symbol comes from the page URL, so the message is put in with
+// textContent. Any HTML in the URL shows as plain text.
+function renderNotFound(symbolText) {
+  document.getElementById('page').innerHTML = `
     <div class="wrap stack">
       <div class="card stack-sm" data-testid="${TEST_IDS.stockNotFound}">
         <h1>${TEXT.stock.notFoundTitle}</h1>
-        <p class="muted">${stockMissingMessage(symbolText)}</p>
+        <p class="muted" id="stock-not-found-line"></p>
         <div><a class="btn btn-accent" href="${href('market')}">${TEXT.common.backToMarket}</a></div>
       </div>
     </div>
   `;
+  document.getElementById('stock-not-found-line').textContent = stockMissingMessage(symbolText);
+}
+
+// The stock list could not be loaded. That is not a missing page, so it
+// shows the same box as the market page.
+function renderLoadError() {
+  document.getElementById('page').innerHTML = `
+    <div class="wrap stack">
+      <div class="card stack-sm" data-testid="${TEST_IDS.marketError}">
+        <h1>${TEXT.market.errorTitle}</h1>
+        <p class="muted">${TEXT.market.errorBody}</p>
+        <div>
+          <button type="button" class="btn btn-accent" data-testid="${TEST_IDS.marketRetry}">
+            ${TEXT.common.tryAgain}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  document
+    .querySelector(`[data-testid="${TEST_IDS.marketRetry}"]`)
+    .addEventListener('click', () => { buildPage(); });
 }
 
 function factRowHtml(label, testId, startValue) {
@@ -428,6 +459,10 @@ function showSuccess(title, detail) {
 function confirmTrade() {
   const nowMs = Date.now();
   const dialog = pick(TEST_IDS.confirmDialog);
+
+  // Another tab may have traded since this page was drawn, so the saved
+  // account is read again and checked before anything is written.
+  reloadAccount();
   const { result, priceCents } = checkNow(nowMs);
 
   if (!result.ok) {
@@ -507,25 +542,33 @@ function wire() {
   });
 }
 
-async function start() {
-  session = await requireSession();
-  if (!session) return;
-  account = session.account;
+async function buildPage() {
+  if (menu) {
+    menu.stop();
+    menu = null;
+  }
+  if (refreshTimer !== null) {
+    window.clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
 
-  let stocks = [];
+  let stocks;
   try {
     const response = await fetch('/data/stocks.json');
     if (!response.ok) throw new Error('Could not load stocks');
     stocks = await response.json();
   } catch (error) {
-    stocks = [];
+    stock = null;
+    renderLoadError();
+    menu = renderTopMenu({ page: 'market', user: session.user, account });
+    return;
   }
 
   const wanted = queryValue('symbol').trim().toUpperCase();
   stock = stocks.find((one) => one.symbol === wanted) || null;
 
   if (!stock) {
-    document.getElementById('page').innerHTML = notFoundHtml(wanted);
+    renderNotFound(wanted);
     menu = renderTopMenu({ page: 'market', user: session.user, account });
     return;
   }
@@ -539,7 +582,14 @@ async function start() {
   wire();
   setMode(queryValue('mode').toLowerCase() === 'sell' ? 'sell' : 'buy');
   refresh();
-  window.setInterval(refresh, REFRESH_MS);
+  refreshTimer = window.setInterval(refresh, REFRESH_MS);
+}
+
+async function start() {
+  session = await requireSession();
+  if (!session) return;
+  account = session.account;
+  await buildPage();
 }
 
 start();

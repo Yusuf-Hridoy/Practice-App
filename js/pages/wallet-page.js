@@ -11,7 +11,7 @@ import {
 import { TEST_IDS } from '../test-ids.js';
 import { requireSession } from '../app-session.js';
 import { renderTopMenu } from '../top-menu.js';
-import { writeAccount, resetAccount } from '../account-storage.js';
+import { writeAccount, resetAccount, readAccount } from '../account-storage.js';
 import {
   formatMoney,
   formatSignedMoney,
@@ -137,6 +137,12 @@ function pick(testId) {
   return document.querySelector(`[data-testid="${testId}"]`);
 }
 
+// Reads the saved account again, so a second tab cannot be overwritten.
+function reloadAccount() {
+  account = readAccount(session.user.email, session.user.start);
+  return account;
+}
+
 function selectedChoice() {
   const checked = document.querySelector('input[name="add-amount"]:checked');
   const cents = checked ? Number(checked.value) : 500000;
@@ -200,8 +206,13 @@ function wire() {
     pick(TEST_IDS.addMessage).textContent = '';
     pick(TEST_IDS.addError).textContent = '';
 
+    // Another tab may have changed the account since this page was drawn,
+    // so the saved account is read again and checked before anything is written.
+    reloadAccount();
+
     const check = checkAdd(account, choice.cents);
     if (!check.ok) {
+      drawAccount();
       pick(TEST_IDS.addError).textContent = check.error;
       return;
     }
@@ -223,6 +234,7 @@ function wire() {
   });
 
   pick(TEST_IDS.startOverConfirm).addEventListener('click', () => {
+    reloadAccount();
     account = resetAccount(session.user.email, session.user.start);
     pick(TEST_IDS.startOverDialog).close();
     menu.setCash(account.cashCents);
