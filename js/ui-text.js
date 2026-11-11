@@ -20,6 +20,7 @@ export const TEXT = Object.freeze({
     watchlist: 'Watchlist',
     wallet: 'Wallet',
     rules: 'Rules',
+    profile: 'Your profile',
     marketOpen: 'Market open',
     marketClosed: 'Market closed',
     cash: 'Cash',
@@ -185,6 +186,7 @@ export const TEXT = Object.freeze({
       { key: 'prices', title: 'Prices', body: 'Move a little every 5 seconds. Made-up, but the same every time with the same seed.' },
       { key: 'your-data', title: 'Your data', body: 'Saved in your browser only. A new browser starts fresh.' },
       { key: 'watchlist', title: 'Watchlist', body: 'Up to 6 stocks. One alert per stock. An alert fires once when the price crosses it, then shows Hit.' },
+      { key: 'profile', title: 'Profile', body: 'Photos must be PNG, JPG or WebP, up to 1 MB. You must be 18 or older. Your theme is saved for your account.' },
     ],
     switchesTitle: 'Test switches',
     switchName: '?seed=42',
@@ -242,6 +244,60 @@ export const TEXT = Object.freeze({
     deleted: 'Alert deleted.',
     noChannel: 'Pick at least one way to be told.',
     note: 'An alert fires once, then shows Hit. Prices are checked every 5 seconds.',
+  },
+
+  profile: {
+    title: 'Profile',
+    intro: 'Your details stay in this browser only.',
+
+    photoTitle: 'Photo',
+    photoLabel: 'Profile photo',
+    dropHere: 'Drop a photo here, or choose a file',
+    photoHint: 'PNG, JPG or WebP. Up to 1 MB.',
+    removePhoto: 'Remove photo',
+    photoSaved: 'Photo saved.',
+    photoRemoved: 'Photo removed.',
+    oneAtATime: 'Drop one photo at a time.',
+    wrongType: 'Pick a PNG, JPG or WebP image.',
+    tooBig: 'This photo is too big. Pick one under 1 MB.',
+    photoSaveFailed: "Couldn't save this photo. Try a smaller one.",
+    photoReadFailed: "Couldn't read this photo. Pick another one.",
+
+    accountTitle: 'Account',
+    accountIdLabel: 'Account ID',
+    copyAccountId: 'Copy account ID',
+    copied: 'Copied!',
+    copyDone: 'Account ID copied.',
+    copyFailed: "Couldn't copy. Select the ID and copy it yourself.",
+
+    themeLegend: 'Theme',
+    themeDark: 'Dark',
+    themeLight: 'Light',
+    themeDevice: 'Match my device',
+
+    detailsTitle: 'Your details',
+    displayNameLabel: 'Display name',
+    displayNameError: 'Use 2 to 30 letters, numbers or spaces.',
+    birthDateLabel: 'Date of birth',
+    birthDateNotReal: 'Enter a real date of birth.',
+    birthDateFuture: "Date of birth can't be in the future.",
+    birthDateYoung: 'You must be 18 or older.',
+    countryLabel: 'Country',
+    chooseCountry: 'Choose a country',
+    sectorsLabel: 'Favorite sectors',
+    sectorsHint: 'Hold Ctrl (Cmd on a Mac) to pick more than one.',
+    sectorsTooMany: 'Pick up to 3 sectors.',
+    emailsLegend: 'Email me about',
+    selectAll: 'Select all',
+    emailAlerts: 'Price alerts',
+    emailSummary: 'Weekly summary',
+    emailNews: 'News and tips',
+
+    save: 'Save changes',
+    saved: 'Your changes are saved.',
+    saveFailed: "Couldn't save your changes. Your browser's storage is full.",
+    unsaved: 'You have unsaved changes.',
+    undo: 'Undo changes',
   },
 
   toast: {
@@ -490,4 +546,10 @@ export function toastTitle(symbol, directionWord, priceText) {
 
 export function toastDetail(priceText) {
   return `Now ${priceText}.`;
+}
+
+// --- profile ---
+
+export function problemsMessage(count) {
+  return count === 1 ? 'Fix the 1 problem below.' : `Fix the ${count} problems below.`;
 }

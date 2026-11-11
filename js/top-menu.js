@@ -8,6 +8,8 @@ import { marketStatus } from './market-hours.js';
 import { logout } from './app-session.js';
 import { startAlertChecker } from './alert-checker.js';
 import { startKeyboardShortcuts } from './keyboard-shortcuts.js';
+import { readProfile } from './profile-storage.js';
+import { initialsFrom } from './profile-rules.js';
 
 export function logoHtml(linkTo = 'market') {
   return `
@@ -34,10 +36,24 @@ function menuLinkHtml(page, label, testId, currentPage) {
   return `<a class="menu-link" data-testid="${testId}" href="${href(page)}"${current}>${label}</a>`;
 }
 
-// page: "market" | "portfolio" | "wallet" | "rules"
+// The circle at the right of the menu: the photo when there is one,
+// the initials from the display name when there isn't.
+export function avatarHtml(profile, user, currentPage) {
+  const name = profile.displayName.trim() === '' ? user.displayName : profile.displayName;
+  const inside = profile.photoDataUrl
+    ? `<img class="avatar-photo" src="${profile.photoDataUrl}" alt="">`
+    : initialsFrom(name);
+  const current = currentPage === 'profile' ? ' aria-current="page"' : '';
+  return `
+    <a class="initials" data-testid="${TEST_IDS.menuLinkProfile}" href="${href('profile')}"
+       aria-label="${TEXT.menu.profile}" title="${name}"${current}>${inside}</a>
+  `;
+}
+
+// page: "market" | "portfolio" | "wallet" | "rules" | "profile"
 export function renderTopMenu({ page, user, account, nowMs = Date.now() }) {
   const host = document.getElementById('top-menu');
-  if (!host) return { setCash() {}, stop() {} };
+  if (!host) return { setCash() {}, setProfile() {}, refreshStatus() {}, stop() {} };
 
   host.className = 'top-menu';
   host.setAttribute('data-testid', TEST_IDS.topMenu);
@@ -60,7 +76,7 @@ export function renderTopMenu({ page, user, account, nowMs = Date.now() }) {
           <span class="label">${TEXT.menu.cash}</span>
           <span class="menu-cash-value">${formatMoney(account.cashCents)}</span>
         </a>
-        <span class="initials" title="${user.displayName}">${user.initials}</span>
+        ${avatarHtml(readProfile(user.email, user.profileStart), user, page)}
         <button type="button" class="btn btn-small" data-testid="${TEST_IDS.logoutButton}">
           ${TEXT.menu.logout}
         </button>
@@ -69,6 +85,7 @@ export function renderTopMenu({ page, user, account, nowMs = Date.now() }) {
   `;
 
   const statusPill = host.querySelector(`[data-testid="${TEST_IDS.marketStatus}"]`);
+  const avatarBox = host.querySelector(`[data-testid="${TEST_IDS.menuLinkProfile}"]`);
   const cashBox = host.querySelector(`[data-testid="${TEST_IDS.menuCash}"]`);
   const cashValue = cashBox.querySelector('.menu-cash-value');
 
@@ -92,6 +109,15 @@ export function renderTopMenu({ page, user, account, nowMs = Date.now() }) {
     setCash(cents) {
       cashBox.setAttribute('data-cents', String(cents));
       cashValue.textContent = formatMoney(cents);
+    },
+    // The Profile page calls this after a save, so the circle changes
+    // without a page reload.
+    setProfile(profile) {
+      const name = profile.displayName.trim() === '' ? user.displayName : profile.displayName;
+      avatarBox.title = name;
+      avatarBox.innerHTML = profile.photoDataUrl
+        ? `<img class="avatar-photo" src="${profile.photoDataUrl}" alt="">`
+        : initialsFrom(name);
     },
     refreshStatus,
     stop() {

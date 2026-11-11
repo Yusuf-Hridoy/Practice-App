@@ -9,6 +9,7 @@ export const TEST_IDS = Object.freeze({
   menuLinkWatchlist: 'menu-link-watchlist',
   menuLinkWallet: 'menu-link-wallet',
   menuLinkRules: 'menu-link-rules',
+  menuLinkProfile: 'menu-link-profile',
   marketStatus: 'market-status',
   menuCash: 'menu-cash',
   logoutButton: 'logout-button',
@@ -155,6 +156,44 @@ export const TEST_IDS = Object.freeze({
   toastArea: 'toast-area',
   toast: 'toast',
   toastClose: 'toast-close',
+
+  // Profile photo
+  photoPreview: 'photo-preview',
+  photoInput: 'photo-input',
+  photoDropZone: 'photo-drop-zone',
+  photoRemove: 'photo-remove',
+  photoMessage: 'photo-message',
+
+  // Profile account id
+  accountId: 'account-id',
+  copyAccountId: 'copy-account-id',
+  copyStatus: 'copy-status',
+
+  // Profile theme
+  themeDark: 'theme-dark',
+  themeLight: 'theme-light',
+  themeDevice: 'theme-device',
+
+  // Profile details form
+  profileForm: 'profile-form',
+  displayName: 'display-name',
+  displayNameError: 'display-name-error',
+  birthDate: 'birth-date',
+  birthDateError: 'birth-date-error',
+  country: 'country',
+  sectors: 'sectors',
+  sectorsError: 'sectors-error',
+  emailsAll: 'emails-all',
+  emailAlerts: 'email-alerts',
+  emailSummary: 'email-summary',
+  emailNews: 'email-news',
+
+  // Profile form footer
+  formErrorSummary: 'form-error-summary',
+  unsavedChanges: 'unsaved-changes',
+  undoChanges: 'undo-changes',
+  saveChanges: 'save-changes',
+  saveMessage: 'save-message',
 
   // Rules and 404
   rulesCard: 'rules-card',

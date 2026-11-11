@@ -5,6 +5,7 @@
     "displayName": "Trader",
     "initials": "TR",
     "note": "Owns some stocks already",
+    "accountId": "TL-4821-TR",
     "start": {
       "cashCents": 880840,
       "totalAddedCents": 1000000,
@@ -66,6 +67,22 @@
           "hitPriceCents": null
         }
       }
+    },
+    "profileStart": {
+      "photoDataUrl": null,
+      "displayName": "Trader",
+      "birthDate": "1995-04-12",
+      "country": "Bangladesh",
+      "sectors": [
+        "Robotics",
+        "Health"
+      ],
+      "emails": {
+        "alerts": true,
+        "summary": false,
+        "news": false
+      },
+      "theme": "dark"
     }
   },
   {
@@ -74,6 +91,7 @@
     "displayName": "Newbie",
     "initials": "NB",
     "note": "$10,000 cash, owns nothing yet",
+    "accountId": "TL-7730-NB",
     "start": {
       "cashCents": 1000000,
       "totalAddedCents": 1000000,
@@ -91,6 +109,19 @@
     "watchlistStart": {
       "symbols": [],
       "alerts": {}
+    },
+    "profileStart": {
+      "photoDataUrl": null,
+      "displayName": "Newbie",
+      "birthDate": "",
+      "country": "",
+      "sectors": [],
+      "emails": {
+        "alerts": false,
+        "summary": false,
+        "news": false
+      },
+      "theme": "dark"
     }
   }
 ]

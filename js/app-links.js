@@ -11,6 +11,7 @@ const PAGE_FILES = Object.freeze({
   portfolio: 'portfolio',
   watchlist: 'watchlist',
   wallet: 'wallet',
+  profile: 'profile',
   rules: 'rules',
   notFound: '404',
 });

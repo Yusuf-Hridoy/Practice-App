@@ -58,6 +58,35 @@ The `trader@tradeloom.test` account starts with NOVA, PIXEL, BRISK and OAKFIN on
 watchlist, and one alert set for NOVA above $55.00. `newbie@tradeloom.test` starts with an
 empty watchlist. **Start over** on the Wallet page clears the watchlist back to that start.
 
+## Profile
+
+The Profile page is behind the circle at the right of the top menu. Each account can change
+its **photo**, **display name**, **date of birth**, **country**, up to **3 favorite
+sectors** and which **emails** it wants. Everything is saved in your browser, under your
+account, like the rest of your data.
+
+The **photo** must be a PNG, JPG or WebP of **1 MB or less**. Choose a file or drop one on
+the box. A good photo is saved on its own, right away, without the Save button, and then
+shows in the top menu circle on every page. With no photo the circle shows your initials:
+the first letter of your first two words, or the first two letters of a one-word name, so
+"Mira Khan" gives "MK".
+
+Everything else is saved together with **Save changes**. The display name must be 2 to 30
+letters, numbers or spaces. The date of birth is optional, but if you fill it in you must be
+**18 or older**, counted on today's Dhaka date, and turning 18 today counts. While a field
+is different from what is saved, the page says so and offers **Undo changes**, and your
+browser asks before you leave the page.
+
+The **theme** is Dark, Light or Match my device. It is saved for your account and applies to
+**every page**, including the price chart, the pop-up messages and the dialogs. Match my
+device follows your device setting and changes as soon as you change it. **Start over** on
+the Wallet page puts the whole profile back, theme included.
+
+| Email | Account ID |
+| --- | --- |
+| `trader@tradeloom.test` | `TL-4821-TR` |
+| `newbie@tradeloom.test` | `TL-7730-NB` |
+
 ## Test switches
 
 | Switch | What it does |
@@ -77,6 +106,7 @@ look at prices but you cannot buy or sell.
 - `/stock?symbol=KRYL` one stock, with the chart and the trade box
 - `/portfolio` what you own
 - `/wallet` cash, adding practice money, start over and history
+- `/profile` your photo, details, account ID and theme
 - `/rules` every rule the app follows
 
 Every rule the app follows is written on the [Rules page](/rules). If the app does

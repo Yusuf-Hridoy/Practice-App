@@ -13,6 +13,7 @@ import { requireSession } from '../app-session.js';
 import { renderTopMenu } from '../top-menu.js';
 import { writeAccount, resetAccount, readAccount } from '../account-storage.js';
 import { resetWatchlist } from '../watchlist-storage.js';
+import { resetProfile } from '../profile-storage.js';
 import {
   formatMoney,
   formatSignedMoney,
@@ -238,6 +239,12 @@ function wire() {
     reloadAccount();
     account = resetAccount(session.user.email, session.user.start);
     resetWatchlist(session.user.email, session.user.watchlistStart);
+
+    // The profile goes back too, including the theme, which is applied at once.
+    const freshProfile = resetProfile(session.user.email, session.user.profileStart);
+    window.TradeloomTheme.applySaved();
+    menu.setProfile(freshProfile);
+
     pick(TEST_IDS.startOverDialog).close();
     menu.setCash(account.cashCents);
     pick(TEST_IDS.addMessage).textContent = '';
