@@ -13,6 +13,8 @@ const PAGE_FILES = Object.freeze({
   wallet: 'wallet',
   profile: 'profile',
   rules: 'rules',
+  paymentFrame: 'payment-frame',
+  receipt: 'receipt',
   notFound: '404',
 });
 

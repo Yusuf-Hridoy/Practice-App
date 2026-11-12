@@ -644,6 +644,93 @@ select[multiple] option { padding: 6px 8px; border-radius: 6px; }
 }
 .toast-close:hover { color: var(--text); border-color: var(--border); }
 
+/* ---------- card payment ---------- */
+
+/* The payment frame is its own little page inside the Wallet card. */
+.frame-body { background: var(--surface); }
+.pay-wrap { padding: 16px; }
+.pay-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.pay-brand-name { font-weight: 700; letter-spacing: -0.01em; }
+.pay-pair { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+
+.pay-step { border-top: 1px solid var(--border); padding-top: 16px; }
+.pay-frame {
+  display: block;
+  width: 100%;
+  height: 560px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.card-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.card-list-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--surface-raised);
+}
+.card-list-row code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- history filters and pages ---------- */
+
+.filter-row {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+}
+.filter-actions { display: flex; align-items: flex-end; }
+.page-numbers { gap: 6px; }
+.page-numbers .btn[aria-current="page"] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  border-color: var(--accent-soft);
+}
+
+/* ---------- receipt ---------- */
+
+.receipt-page { max-width: 560px; margin: 0 auto; padding: 28px 16px 48px; }
+.receipt-number {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}
+.receipt-rows { display: grid; gap: 10px; margin: 6px 0; }
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.receipt-row:last-child { border-bottom: none; }
+.receipt-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* On paper the buttons are no use, and plain black on white reads best. */
+@media print {
+  .no-print { display: none !important; }
+  html, body { background: #FFFFFF; color: #000000; }
+  .receipt-page { padding: 0; }
+  .receipt-card { border: none; background: #FFFFFF; color: #000000; }
+  .muted { color: #333333; }
+}
+
 /* ---------- animation ---------- */
 
 .btn, .chip, input, select, .menu-link { transition: border-color 150ms ease, background 150ms ease, color 150ms ease; }
@@ -661,6 +748,8 @@ select[multiple] option { padding: 6px 8px; border-radius: 6px; }
   .watch-row .pill { grid-column: 1 / -1; justify-self: start; }
   .toast-area { right: 0; left: 0; bottom: 0; width: 100%; padding: 12px; }
   .grid-3, .grid-4, .grid-2-1, .profile-grid { grid-template-columns: 1fr; }
+  .filter-row { grid-template-columns: 1fr; }
+  .pay-frame { height: 600px; }
   h1 { font-size: 24px; }
   .big-price { font-size: 32px; }
   .stat-value { font-size: 26px; }

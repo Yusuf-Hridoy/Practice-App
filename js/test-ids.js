@@ -116,6 +116,48 @@ export const TEST_IDS = Object.freeze({
   historyRow: 'history-row',
   historyDownload: 'history-download',
 
+  // Wallet card step
+  payStep: 'pay-step',
+  payAmount: 'pay-amount',
+  testCards: 'test-cards',
+  payFrame: 'pay-frame',
+  payCancel: 'pay-cancel',
+
+  // Inside the payment frame
+  cardName: 'card-name',
+  cardNumber: 'card-number',
+  cardExpiry: 'card-expiry',
+  cardCvc: 'card-cvc',
+  cardPay: 'card-pay',
+  cardNameError: 'card-name-error',
+  cardNumberError: 'card-number-error',
+  cardExpiryError: 'card-expiry-error',
+  cardCvcError: 'card-cvc-error',
+  cardResult: 'card-result',
+
+  // History filters and pages
+  historyFilterType: 'history-filter-type',
+  historyFilterFrom: 'history-filter-from',
+  historyFilterTo: 'history-filter-to',
+  historyClearFilters: 'history-clear-filters',
+  historyFilterError: 'history-filter-error',
+  historyEmpty: 'history-empty',
+  historyPageInfo: 'history-page-info',
+  historyPrev: 'history-prev',
+  historyNext: 'history-next',
+  historyPage: 'history-page',
+  historyReceiptLink: 'history-receipt-link',
+
+  // Receipt
+  receipt: 'receipt',
+  receiptNumber: 'receipt-number',
+  receiptDate: 'receipt-date',
+  receiptRow: 'receipt-row',
+  receiptCashAfter: 'receipt-cash-after',
+  receiptPrint: 'receipt-print',
+  receiptBack: 'receipt-back',
+  receiptNotFound: 'receipt-not-found',
+
   // Watchlist, top of the page
   browserAlertsButton: 'browser-alerts-button',
   browserAlertsStatus: 'browser-alerts-status',

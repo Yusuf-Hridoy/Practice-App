@@ -225,18 +225,22 @@ export function checkAdd(account, amountCents) {
   return { ok: true, amountCents };
 }
 
-export function applyAdd(account, amountCents, nowMs = Date.now()) {
+// last4 is the last 4 digits of the test card that paid. The history row keeps
+// it, so the wallet line and the receipt can both say which card was used.
+export function applyAdd(account, amountCents, nowMs = Date.now(), last4 = '') {
   const next = cloneAccount(account);
   next.cashCents += amountCents;
   next.totalAddedCents += amountCents;
 
-  next.history.push({
+  const entry = {
     id: nextHistoryId(next),
     time: dhakaIsoString(nowMs),
     type: 'add',
     amountCents,
     cashAfterCents: next.cashCents,
-  });
+  };
+  if (String(last4) !== '') entry.last4 = String(last4);
+  next.history.push(entry);
 
   return { account: next, cashAfterCents: next.cashCents };
 }

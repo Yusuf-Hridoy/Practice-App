@@ -169,6 +169,62 @@ export const TEXT = Object.freeze({
     download: 'Download CSV',
     historyStart: 'Starting money',
     historyAdd: 'Added practice money',
+    colReceipt: 'Receipt',
+    openReceipt: 'Open',
+    filterTypeLabel: 'Type',
+    filterAllTypes: 'All types',
+    filterBuys: 'Buys',
+    filterSells: 'Sells',
+    filterTopUps: 'Top-ups',
+    filterFromLabel: 'From',
+    filterToLabel: 'To',
+    clearFilters: 'Clear filters',
+    datesBackwards: 'The From date must be on or before the To date.',
+    historyEmpty: 'No history matches these filters.',
+    previous: 'Previous',
+    next: 'Next',
+  },
+
+  payment: {
+    stepTitle: 'Pay by card',
+    frameTitle: 'Card payment',
+    testCardsTitle: 'Test cards',
+    cardWorks: 'Payment works',
+    declined: 'Your card was declined. Try another card.',
+    noFunds: "Your card doesn't have enough funds.",
+    unknownCard: "We don't know this test card. Use one from the list.",
+    brand: 'PayDemo',
+    brandNote: 'Practice payments. No real money.',
+    nameLabel: 'Name on card',
+    namePlaceholder: 'As printed on the card',
+    numberLabel: 'Card number',
+    expiryLabel: 'Expiry (MM/YY)',
+    cvcLabel: 'CVC',
+    processing: 'Processing…',
+    nameMissing: 'Enter the name on the card.',
+    numberBad: 'Enter a 16-digit card number.',
+    expiryBad: 'Enter a valid expiry date.',
+    expiryPast: 'This card has expired.',
+    cvcBad: 'Enter the 3-digit code on the back.',
+  },
+
+  receipt: {
+    title: 'Tradeloom receipt',
+    print: 'Print',
+    backToWallet: 'Back to wallet',
+    practiceNote: 'Practice money only. Not a real receipt.',
+    notFoundTitle: 'Receipt not found',
+    notFoundBody: "We couldn't find this receipt in your history.",
+    bought: 'Bought',
+    sold: 'Sold',
+    pricePerShare: 'Price per share',
+    total: 'Total',
+    added: 'Added',
+    paidWith: 'Paid with',
+    card: 'Card',
+    startingMoney: 'Starting money',
+    cashAfter: 'Cash after',
+    dhakaTime: 'Dhaka time',
   },
 
   rules: {
@@ -187,6 +243,7 @@ export const TEXT = Object.freeze({
       { key: 'your-data', title: 'Your data', body: 'Saved in your browser only. A new browser starts fresh.' },
       { key: 'watchlist', title: 'Watchlist', body: 'Up to 6 stocks. One alert per stock. An alert fires once when the price crosses it, then shows Hit.' },
       { key: 'profile', title: 'Profile', body: 'Photos must be PNG, JPG or WebP, up to 1 MB. You must be 18 or older. Your theme is saved for your account.' },
+      { key: 'payments', title: 'Payments', body: 'Adding money needs a test card. Receipts open in a new tab. History shows 10 rows per page.' },
     ],
     switchesTitle: 'Test switches',
     switchName: '?seed=42',
@@ -434,8 +491,60 @@ export function addedSoFarText(totalAddedText) {
   return `Added so far ${totalAddedText} of $50,000`;
 }
 
-export function addedMessage(amountLabel, cashNowText) {
-  return `Added ${amountLabel}. Cash now: ${cashNowText}.`;
+export function addedWithCardMessage(amountLabel, last4, cashNowText) {
+  return `Added ${amountLabel} with card ending ${last4}. Cash now: ${cashNowText}.`;
+}
+
+// --- card payment ---
+
+export function payingLine(amountLabel) {
+  return `Paying ${amountLabel}`;
+}
+
+export function payButtonText(amountLabel) {
+  return `Pay ${amountLabel}`;
+}
+
+export function cardEndingText(last4) {
+  return `Card ending ${last4}`;
+}
+
+// --- history, receipts, filters and pages ---
+
+export function historyAddWithCard(last4) {
+  return `Added practice money · card ending ${last4}`;
+}
+
+export function shortBought(shares, symbol) {
+  return `Bought ${shares} ${symbol}`;
+}
+
+export function shortSold(shares, symbol) {
+  return `Sold ${shares} ${symbol}`;
+}
+
+export function receiptLinkLabel(whatText) {
+  return `Open receipt for ${whatText}`;
+}
+
+export function showingText(first, last, total) {
+  return `Showing ${first} to ${last} of ${total}`;
+}
+
+export function pageButtonLabel(page) {
+  return `Page ${page}`;
+}
+
+export function receiptNumberText(accountId, historyId) {
+  return `#${accountId}-${String(historyId).toUpperCase()}`;
+}
+
+export function receiptDateText(stamp) {
+  return `${stamp} Dhaka time`;
+}
+
+export function sharesOfText(shares, symbol) {
+  return `${shares} ${symbol}`;
 }
 
 export function historyBought(shares, symbol, priceText) {

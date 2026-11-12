@@ -13,6 +13,12 @@ export function formatMoney(cents) {
   return usDollars.format(Math.round(cents) / 100);
 }
 
+// "$5,000" instead of "$5,000.00", for the round amounts on the buttons.
+export function shortMoney(cents) {
+  const text = formatMoney(cents);
+  return text.endsWith('.00') ? text.slice(0, -3) : text;
+}
+
 export function formatSignedMoney(cents) {
   const whole = Math.round(cents);
   if (whole > 0) return `+${formatMoney(whole)}`;
@@ -78,6 +84,14 @@ export function dhakaDayOf(timeValue) {
   if (Number.isNaN(ms)) return '';
   const p = dhakaParts(ms);
   return `${p.day} ${TIME_TEXT.months[p.month - 1]}`;
+}
+
+// "3 Nov 2026, 11:42" in Dhaka time, for a receipt.
+export function dhakaLongStamp(timeValue) {
+  const ms = typeof timeValue === 'number' ? timeValue : Date.parse(timeValue);
+  if (Number.isNaN(ms)) return '';
+  const p = dhakaParts(ms);
+  return `${p.day} ${TIME_TEXT.months[p.month - 1]} ${p.year}, ${pad2(p.hours)}:${pad2(p.minutes)}`;
 }
 
 // Plain "YYYY-MM-DD HH:MM" in Dhaka time, for the CSV file.

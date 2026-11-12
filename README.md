@@ -35,12 +35,13 @@ links when the host is `localhost` or `127.0.0.1`.
 
 ## Demo accounts
 
-Password for both: `Play123!`
+Password for all three: `Play123!`
 
 | Email | What it starts with |
 | --- | --- |
 | `trader@tradeloom.test` | $8,808.40 cash, 20 LUMA and 5 KRYL |
 | `newbie@tradeloom.test` | $10,000 cash, no stocks |
+| `busy@tradeloom.test` | $28,084.50 cash, 7 stocks and 24 rows of history |
 
 ## Watchlist
 
@@ -57,6 +58,36 @@ the app (and a browser notification, if you turned those on), and the alert then
 The `trader@tradeloom.test` account starts with NOVA, PIXEL, BRISK and OAKFIN on its
 watchlist, and one alert set for NOVA above $55.00. `newbie@tradeloom.test` starts with an
 empty watchlist. **Start over** on the Wallet page clears the watchlist back to that start.
+
+## Payments and receipts
+
+Adding practice money on the Wallet page goes through a **card form in an iframe**. Pick an
+amount, press **Add**, and a **Pay by card** step appears with the three test cards and the
+form. The frame checks the fields, waits 2 seconds on **Processing…**, and then tells the
+Wallet page what happened with a `postMessage`. The page only listens to messages from its
+own origin.
+
+| Card number | What happens |
+| --- | --- |
+| `4242 4242 4242 4242` | The payment works |
+| `4000 0000 0000 0002` | Your card was declined. Try another card. |
+| `4000 0000 0000 9995` | Your card doesn't have enough funds. |
+
+The $50,000 limit is checked **before** the card form opens, and again before the money is
+added. A top-up then shows in the history as *Added practice money · card ending 4242*.
+
+Every history row has a **Receipt** link that opens `/receipt?id=<history id>` in a new tab:
+a small printable card with the receipt number, the Dhaka date and time, the rows that fit
+that kind of trade, and **Cash after**. **Print** uses your browser's print dialog, and the
+buttons are hidden on paper. An id that isn't in your history shows **Receipt not found**.
+
+The history has a **Type** filter (all, buys, sells, top-ups), a **From** and **To** date
+(both counted on the Dhaka day of each row), and **10 rows per page**. The filters and the
+page live in the query, like
+`/wallet?type=buy&from=2026-11-01&to=2026-11-09&page=2`, so a view can be linked to and the
+Back button walks back through it. Anything the app doesn't understand in the query quietly
+falls back to the default. **Download CSV** holds every row that matches the filters, on all
+pages.
 
 ## Profile
 
@@ -86,6 +117,7 @@ the Wallet page puts the whole profile back, theme included.
 | --- | --- |
 | `trader@tradeloom.test` | `TL-4821-TR` |
 | `newbie@tradeloom.test` | `TL-7730-NB` |
+| `busy@tradeloom.test` | `TL-5090-BU` |
 
 ## Test switches
 
@@ -106,6 +138,7 @@ look at prices but you cannot buy or sell.
 - `/stock?symbol=KRYL` one stock, with the chart and the trade box
 - `/portfolio` what you own
 - `/wallet` cash, adding practice money, start over and history
+- `/receipt?id=h3` one receipt from your history, printable, in its own tab
 - `/profile` your photo, details, account ID and theme
 - `/rules` every rule the app follows
 
