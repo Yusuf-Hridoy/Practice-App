@@ -28,12 +28,6 @@ export const TEXT = Object.freeze({
     navLabel: 'Main menu',
   },
 
-  marketHours: {
-    opensToday: 'Opens today at 9:00.',
-    opensTomorrow: 'Opens tomorrow at 9:00.',
-    opensMonday: 'Opens again Monday at 9:00.',
-  },
-
   login: {
     practicePill: 'Practice money only',
     heading: 'Learn to trade. Lose nothing.',
@@ -87,7 +81,7 @@ export const TEXT = Object.freeze({
     todaySuffix: 'today',
     rangeHour: '1 hour',
     rangeToday: 'Today',
-    chartNote: 'Dashed line = price when the market opened today.',
+    chartNote: 'Dashed line = price at the start of today.',
     factsTitle: 'Today',
     factOpen: 'Opened today at',
     factHigh: 'Highest today',
@@ -238,7 +232,7 @@ export const TEXT = Object.freeze({
       { key: 'gain', title: 'Gain', body: 'Worth now minus what you paid. ▲ is up, ▼ is down.' },
       { key: 'average-price', title: 'Average price', body: 'If you buy the same stock more than once, we use the average of what you paid.' },
       { key: 'fees', title: 'Fees', body: 'None. What you see is what you pay.' },
-      { key: 'market-hours', title: 'Market hours', body: 'Open Monday to Friday, 9:00 to 17:00 Dhaka time. When closed, you can look but not trade.' },
+      { key: 'market-hours', title: 'Market hours', body: 'Open all day, every day. Add ?market=closed to any link to test the closed market.' },
       { key: 'prices', title: 'Prices', body: 'Move a little every 5 seconds. Made-up, but the same every time with the same seed.' },
       { key: 'your-data', title: 'Your data', body: 'Saved in your browser only. A new browser starts fresh.' },
       { key: 'watchlist', title: 'Watchlist', body: 'Up to 6 stocks. One alert per stock. An alert fires once when the price crosses it, then shows Hit.' },
@@ -379,8 +373,8 @@ export function sharesWord(count) {
   return count === 1 ? '1 share' : `${count} shares`;
 }
 
-export function marketClosedMessage(nextOpenSentence) {
-  return `Market is closed. You can look at prices, but you can\'t buy or sell right now. ${nextOpenSentence}`;
+export function marketClosedMessage() {
+  return `Market is closed. You can look at prices, but you can\'t buy or sell right now. Remove market=closed from the link to open it.`;
 }
 
 export function badSharesMessage() {

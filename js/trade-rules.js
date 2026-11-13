@@ -33,9 +33,9 @@ export function parseShares(rawValue) {
   return { ok: true, shares };
 }
 
-export function marketClosedError(nowMs = Date.now()) {
-  const status = marketStatus(nowMs);
-  return status.open ? null : marketClosedMessage(status.nextOpen);
+export function marketClosedError() {
+  const status = marketStatus();
+  return status.open ? null : marketClosedMessage();
 }
 
 export function maxAffordableShares(cashCents, priceCents) {
@@ -103,7 +103,7 @@ export function checkBuy({ sharesRaw, priceCents, account, symbol, nowMs = Date.
   const shares = parseShares(sharesRaw);
   if (!shares.ok) return shares;
 
-  const closed = marketClosedError(nowMs);
+  const closed = marketClosedError();
   if (closed) return { ok: false, error: closed };
 
   const costCents = shares.shares * priceCents;
@@ -155,7 +155,7 @@ export function checkSell({ sharesRaw, priceCents, account, symbol, nowMs = Date
   const shares = parseShares(sharesRaw);
   if (!shares.ok) return shares;
 
-  const closed = marketClosedError(nowMs);
+  const closed = marketClosedError();
   if (closed) return { ok: false, error: closed };
 
   const owned = ownedShares(account, symbol);

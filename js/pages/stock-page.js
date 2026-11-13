@@ -358,11 +358,11 @@ function updateHeader(nowMs = Date.now()) {
   ).replace(/\s{2,}/g, ' ');
 }
 
-function updateClosedBanner(nowMs = Date.now()) {
-  const status = marketStatus(nowMs);
+function updateClosedBanner() {
+  const status = marketStatus();
   const banner = pick(TEST_IDS.tradeClosedBanner);
   banner.hidden = status.open;
-  if (!status.open) banner.textContent = marketClosedMessage(status.nextOpen);
+  if (!status.open) banner.textContent = marketClosedMessage();
 }
 
 function refresh() {
@@ -371,7 +371,7 @@ function refresh() {
   updateChart(nowMs);
   updateFacts(nowMs);
   updateSummary(nowMs);
-  updateClosedBanner(nowMs);
+  updateClosedBanner();
 }
 
 function showError(message) {

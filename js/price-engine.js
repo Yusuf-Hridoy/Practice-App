@@ -2,10 +2,12 @@
 // No Math.random() anywhere in the app.
 
 import { seedValue } from './app-links.js';
-import { dhakaParts, dhakaDateKey, shiftDays, isWeekend, OPEN_HOUR } from './market-hours.js';
+import { dhakaParts, dhakaDateKey } from './market-hours.js';
 
 export const STEP_SECONDS = 5;
-export const STEPS_PER_DAY = 5760;
+// A full day of steps: 24 hours of five-second steps, every day of the week.
+export const STEPS_PER_DAY = 17280;
+export const LAST_STEP = STEPS_PER_DAY - 1;
 export const STEPS_PER_HOUR = 720;
 export const MIN_PRICE_CENTS = 100;
 
@@ -30,27 +32,19 @@ function mulberry32(seed) {
   };
 }
 
-// Monday to Friday use today. Saturday and Sunday use the Friday before.
-export function tradingDateKey(nowMs = Date.now()) {
-  const p = dhakaParts(nowMs);
-  if (p.weekday === 6) return dhakaDateKey(shiftDays(nowMs, -1));
-  if (p.weekday === 0) return dhakaDateKey(shiftDays(nowMs, -2));
-  return dhakaDateKey(nowMs);
-}
-
+// Steps run from 00:00 Dhaka time to the end of the day, every day of the week.
 export function currentStep(nowMs = Date.now()) {
   const p = dhakaParts(nowMs);
-  if (isWeekend(p.weekday)) return STEPS_PER_DAY;
-  const secondsSinceOpen = p.hours * 3600 + p.minutes * 60 + p.seconds - OPEN_HOUR * 3600;
-  const step = Math.floor(secondsSinceOpen / STEP_SECONDS);
+  const secondsSinceMidnight = p.hours * 3600 + p.minutes * 60 + p.seconds;
+  const step = Math.floor(secondsSinceMidnight / STEP_SECONDS);
   if (step < 0) return 0;
-  if (step > STEPS_PER_DAY) return STEPS_PER_DAY;
+  if (step > LAST_STEP) return LAST_STEP;
   return step;
 }
 
-// Clock text for a step, like "09:05". Step 0 is 09:00.
+// Clock text for a step, like "09:05". Step 0 is 00:00.
 export function stepClockText(step) {
-  const totalSeconds = OPEN_HOUR * 3600 + step * STEP_SECONDS;
+  const totalSeconds = step * STEP_SECONDS;
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
@@ -59,7 +53,7 @@ export function stepClockText(step) {
 const dayCache = new Map();
 
 function dayData(stock, nowMs) {
-  const date = tradingDateKey(nowMs);
+  const date = dhakaDateKey(nowMs);
   const seed = seedValue();
   const cacheKey = `${seed}|${stock.symbol}|${date}`;
 

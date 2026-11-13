@@ -124,12 +124,14 @@ the Wallet page puts the whole profile back, theme included.
 | Switch | What it does |
 | --- | --- |
 | `?seed=42` | Same prices every time. The seed is copied onto every link, so it survives page changes. |
+| `?market=closed` | Closes the market. Copied onto every link too, so it survives page changes. |
 
-Prices move one step every 5 seconds of market time. With the same seed, the same day and
-the same time, every computer shows the same price. Without a seed the app uses `tradeloom`.
+Prices move one step every 5 seconds, from 00:00 Dhaka time, 17,280 steps a day, every day
+of the week. With the same seed, the same day and the same time, every computer shows the
+same price. Without a seed the app uses `tradeloom`.
 
-The market is open Monday to Friday, 9:00 to 17:00 Dhaka time. When it is closed you can
-look at prices but you cannot buy or sell.
+The market is open all day, every day. It is closed only while the link carries
+`?market=closed`; then you can look at prices but you cannot buy or sell.
 
 ## Pages
 

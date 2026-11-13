@@ -1,12 +1,12 @@
-// Market hours, always in Dhaka time (UTC+6, no daylight saving).
-// Every function takes an optional nowMs so it can be checked with a fixed time.
+// Dhaka time helpers (UTC+6, no daylight saving) and the market switch.
+// The market is open all day, every day. It is closed only when the page
+// link carries ?market=closed.
+// Every time function takes an optional nowMs so it can be checked with a fixed time.
 
-import { TEXT } from './ui-text.js';
+import { isMarketClosedLink } from './app-links.js';
 
 export const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000;
 export const DAY_MS = 24 * 60 * 60 * 1000;
-export const OPEN_HOUR = 9;
-export const CLOSE_HOUR = 17;
 
 function pad2(value) {
   return String(value).padStart(2, '0');
@@ -44,32 +44,11 @@ export function shiftDays(nowMs, days) {
   return nowMs + days * DAY_MS;
 }
 
-export function isWeekend(weekday) {
-  return weekday === 0 || weekday === 6;
+// Open all day, every day. Only the ?market=closed switch closes it.
+export function isMarketOpen() {
+  return !isMarketClosedLink();
 }
 
-export function isMarketOpen(nowMs = Date.now()) {
-  const p = dhakaParts(nowMs);
-  if (isWeekend(p.weekday)) return false;
-  return p.hours >= OPEN_HOUR && p.hours < CLOSE_HOUR;
-}
-
-export function nextOpenSentence(nowMs = Date.now()) {
-  const p = dhakaParts(nowMs);
-  if (!isWeekend(p.weekday) && p.hours < OPEN_HOUR) return TEXT.marketHours.opensToday;
-
-  let offset = 1;
-  while (offset < 8) {
-    const next = dhakaParts(shiftDays(nowMs, offset));
-    if (!isWeekend(next.weekday)) break;
-    offset += 1;
-  }
-  return offset === 1 ? TEXT.marketHours.opensTomorrow : TEXT.marketHours.opensMonday;
-}
-
-export function marketStatus(nowMs = Date.now()) {
-  return {
-    open: isMarketOpen(nowMs),
-    nextOpen: nextOpenSentence(nowMs),
-  };
+export function marketStatus() {
+  return { open: isMarketOpen() };
 }

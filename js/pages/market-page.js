@@ -295,10 +295,10 @@ function refresh() {
   cashNode.setAttribute('data-cents', String(account.cashCents));
   cashNode.textContent = formatMoney(account.cashCents);
 
-  const status = marketStatus(nowMs);
+  const status = marketStatus();
   const banner = document.querySelector(`[data-testid="${TEST_IDS.marketClosedBanner}"]`);
   banner.hidden = status.open;
-  if (!status.open) banner.textContent = marketClosedMessage(status.nextOpen);
+  if (!status.open) banner.textContent = marketClosedMessage();
 
   applyFilters();
 }

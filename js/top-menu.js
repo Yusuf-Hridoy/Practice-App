@@ -24,8 +24,8 @@ export function logoHtml(linkTo = 'market') {
   `;
 }
 
-export function marketStatusHtml(nowMs = Date.now()) {
-  const status = marketStatus(nowMs);
+export function marketStatusHtml() {
+  const status = marketStatus();
   const className = status.open ? 'pill pill-open' : 'pill pill-closed';
   const label = status.open ? TEXT.menu.marketOpen : TEXT.menu.marketClosed;
   return `<span class="${className}" data-testid="${TEST_IDS.marketStatus}">${label}</span>`;
@@ -51,7 +51,7 @@ export function avatarHtml(profile, user, currentPage) {
 }
 
 // page: "market" | "portfolio" | "wallet" | "rules" | "profile"
-export function renderTopMenu({ page, user, account, nowMs = Date.now() }) {
+export function renderTopMenu({ page, user, account }) {
   const host = document.getElementById('top-menu');
   if (!host) return { setCash() {}, setProfile() {}, refreshStatus() {}, stop() {} };
 
@@ -70,7 +70,7 @@ export function renderTopMenu({ page, user, account, nowMs = Date.now() }) {
         </nav>
       </div>
       <div class="menu-right">
-        ${marketStatusHtml(nowMs)}
+        ${marketStatusHtml()}
         <a class="menu-cash" data-testid="${TEST_IDS.menuCash}" href="${href('wallet')}"
            data-cents="${account.cashCents}">
           <span class="label">${TEXT.menu.cash}</span>

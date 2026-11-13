@@ -1,6 +1,6 @@
 // Builds every link and redirect, so the app works both on a local
 // python -m http.server (which needs .html) and on Vercel (clean URLs).
-// It also copies the ?seed switch onto every link, so a seed survives page changes.
+// It also copies the ?seed and ?market switches onto every link, so they survive page changes.
 
 export const DEFAULT_SEED = 'tradeloom';
 
@@ -33,6 +33,19 @@ export function seedValue() {
   return getSeed() || DEFAULT_SEED;
 }
 
+// The only value the ?market switch understands. Anything else leaves the market open.
+export const MARKET_CLOSED = 'closed';
+
+export function getMarket() {
+  const value = new URLSearchParams(window.location.search).get('market');
+  const trimmed = (value || '').trim();
+  return trimmed === '' ? null : trimmed;
+}
+
+export function isMarketClosedLink() {
+  return getMarket() === MARKET_CLOSED;
+}
+
 export function href(page, params = {}) {
   const file = PAGE_FILES[page];
   if (!file) throw new Error(`Unknown page: ${page}`);
@@ -50,6 +63,9 @@ export function href(page, params = {}) {
 
   const seed = getSeed();
   if (seed && !query.has('seed')) query.set('seed', seed);
+
+  const market = getMarket();
+  if (market && !query.has('market')) query.set('market', market);
 
   const text = query.toString();
   return text === '' ? path : `${path}?${text}`;
@@ -76,12 +92,15 @@ export function isSafeNext(value) {
   return true;
 }
 
+// Keeps the ?seed and ?market switches on a path the app sends someone to.
 export function withSeed(path) {
   const seed = getSeed();
-  if (!seed) return path;
+  const market = getMarket();
+  if (!seed && !market) return path;
   const [base, search = ''] = path.split('?');
   const query = new URLSearchParams(search);
-  if (!query.has('seed')) query.set('seed', seed);
+  if (seed && !query.has('seed')) query.set('seed', seed);
+  if (market && !query.has('market')) query.set('market', market);
   const text = query.toString();
   return text === '' ? base : `${base}?${text}`;
 }
