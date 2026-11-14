@@ -46,7 +46,7 @@ Password for all three: `Play123!`
 ## Watchlist
 
 The Watchlist page keeps up to **6 stocks** in whatever order you drag them into, with
-**one price alert per stock**. Add a stock from the select on that page, or tap the star on
+**one price alert per stock**. Add a stock from the select on that page, or tap the start on
 any Market row.
 
 An alert is either **Above** or **Below** a price you pick, somewhere between 80% and 120%
