@@ -84,7 +84,12 @@ h2 { font-size: 20px; }
 h3 { font-size: 16px; }
 p { margin: 0; }
 
-a { color: var(--link); text-decoration: none; }
+/* Links are underlined in both themes, so a link sitting inside a sentence is
+   never told apart from the words around it by colour alone (WCAG 1.4.1 Use of
+   Color, axe link-in-text-block). Links that are drawn as buttons, menu items
+   or the profile circle are shapes rather than words in a sentence, so each of
+   those turns the underline off where it is styled. */
+a { color: var(--link); text-decoration: underline; }
 a:hover { text-decoration: underline; }
 
 .num,
@@ -172,6 +177,7 @@ table th { font-variant-numeric: tabular-nums; }
   padding: 8px 12px;
   border-radius: 999px;
   font-size: 14px;
+  text-decoration: none;
 }
 .menu-link:hover { color: var(--text); text-decoration: none; }
 .menu-link[aria-current="page"] { background: var(--accent-soft); color: var(--accent-text); }
@@ -199,6 +205,7 @@ table th { font-variant-numeric: tabular-nums; }
   padding: 6px 14px;
   color: var(--text);
   font-size: 14px;
+  text-decoration: none;
 }
 .menu-cash:hover { text-decoration: none; border-color: var(--accent); }
 .menu-cash .label { font-size: 12px; }
@@ -538,6 +545,7 @@ input[type="range"] {
 .avatar-initials { font-size: 30px; font-weight: 600; }
 .avatar-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
 
+a.initials { text-decoration: none; }
 a.initials:hover { text-decoration: none; border-color: var(--accent); }
 a.initials[aria-current="page"] { outline: 2px solid var(--accent); outline-offset: 1px; }
 

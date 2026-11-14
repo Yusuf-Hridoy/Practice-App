@@ -21,7 +21,6 @@ export const TEXT = Object.freeze({
     news: 'News',
     wallet: 'Wallet',
     rules: 'Rules',
-    profile: 'Your profile',
     marketOpen: 'Market open',
     marketClosed: 'Market closed',
     cash: 'Cash',
@@ -405,6 +404,12 @@ export const TIME_TEXT = Object.freeze({
 });
 
 // --- text that needs values filled in ---
+
+// The accessible name of the profile circle in the top menu. The visible text
+// comes first so that what a person reads is part of what a screen reader says.
+export function profileCircleLabel(visibleName) {
+  return `${visibleName}, your profile`;
+}
 
 export function sharesWord(count) {
   return count === 1 ? '1 share' : `${count} shares`;

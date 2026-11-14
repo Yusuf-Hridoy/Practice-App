@@ -132,7 +132,14 @@ export function chartPoints(stock, range, nowMs = Date.now()) {
   for (let i = start; i <= step; i += every) {
     points.push({ step: i, cents: data.prices[i] });
   }
-  if (points.length === 0 || points[points.length - 1].step !== step) {
+
+  // The "now" point only earns a place when it reads as a different time from
+  // the last regular point. Steps are five seconds apart but the chart shows
+  // hours and minutes, so 10:00:00 and 10:00:35 both read "10:00": the chart
+  // would show the same time twice and the left arrow key would walk from
+  // 10:00 back to 10:00 instead of to 09:55.
+  const last = points[points.length - 1];
+  if (!last || stepClockText(last.step) !== stepClockText(step)) {
     points.push({ step, cents: data.prices[step] });
   }
   return points;

@@ -1,0 +1,53 @@
+# Tells the Playwright test repo that a new build of Tradeloom is live.
+#
+# Vercel creates the deployment and posts its own deployment_status events, so
+# nothing here has to talk to Vercel. Only a successful Production deployment
+# is passed on; preview builds are left alone.
+name: notify-tests
+
+on: deployment_status
+
+# This workflow only calls out to another repository, with a token of its own.
+# It needs nothing from this one.
+permissions: {}
+
+jobs:
+  notify:
+    name: Tell the test repo
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      startsWith(github.event.deployment.environment, 'Production')
+    steps:
+      - name: Send a repository_dispatch to Playwright-Project
+        env:
+          TESTS_TRIGGER_TOKEN: ${{ secrets.TESTS_TRIGGER_TOKEN }}
+          APP_SHA: ${{ github.event.deployment.sha }}
+          # The stable production link, not the deployment's own URL: Vercel can
+          # put protection in front of a per-deployment URL, and the tests have
+          # to be able to open it.
+          BASE_URL: https://practiceapp-six.vercel.app
+        run: |
+          set -euo pipefail
+
+          body="$(printf '{"event_type":"tradeloom-deployed","client_payload":{"app_sha":"%s","base_url":"%s"}}' "${APP_SHA}" "${BASE_URL}")"
+
+          code="$(curl --silent --show-error \
+            --output "${RUNNER_TEMP}/dispatch-response.txt" \
+            --write-out '%{http_code}' \
+            --request POST \
+            --url https://api.github.com/repos/Yusuf-Hridoy/Playwright-Project/dispatches \
+            --header "Authorization: Bearer ${TESTS_TRIGGER_TOKEN}" \
+            --header 'Accept: application/vnd.github+json' \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            --data "${body}")"
+
+          echo "GitHub answered with HTTP ${code}."
+          cat "${RUNNER_TEMP}/dispatch-response.txt"
+
+          if [ "${code}" != "204" ]; then
+            echo "::error::Expected HTTP 204 from the dispatch, got ${code}."
+            exit 1
+          fi
+
+          echo "Asked Playwright-Project to test ${BASE_URL} for commit ${APP_SHA}."

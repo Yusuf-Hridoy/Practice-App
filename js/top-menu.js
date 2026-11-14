@@ -1,6 +1,6 @@
 // Draws the shared top menu.
 
-import { TEXT } from './ui-text.js';
+import { TEXT, profileCircleLabel } from './ui-text.js';
 import { TEST_IDS } from './test-ids.js';
 import { href } from './app-links.js';
 import { formatMoney } from './money-format.js';
@@ -38,6 +38,15 @@ function menuLinkHtml(page, label, testId, currentPage) {
   return `<a class="menu-link" data-testid="${testId}" href="${href(page)}"${current}>${label}</a>`;
 }
 
+// The accessible name of the circle. When the initials show, they are the
+// visible text, so the name has to start with them. A photo has no visible
+// text, so the display name stands in for it.
+function avatarLabel(profile, name) {
+  const initials = initialsFrom(name);
+  const visible = profile.photoDataUrl || initials === '' ? name : initials;
+  return profileCircleLabel(visible);
+}
+
 // The circle at the right of the menu: the photo when there is one,
 // the initials from the display name when there isn't.
 export function avatarHtml(profile, user, currentPage) {
@@ -48,7 +57,7 @@ export function avatarHtml(profile, user, currentPage) {
   const current = currentPage === 'profile' ? ' aria-current="page"' : '';
   return `
     <a class="initials" data-testid="${TEST_IDS.menuLinkProfile}" href="${href('profile')}"
-       aria-label="${TEXT.menu.profile}" title="${name}"${current}>${inside}</a>
+       aria-label="${avatarLabel(profile, name)}" title="${name}"${current}>${inside}</a>
   `;
 }
 
@@ -121,6 +130,7 @@ export function renderTopMenu({ page, user, account }) {
     setProfile(profile) {
       const name = profile.displayName.trim() === '' ? user.displayName : profile.displayName;
       avatarBox.title = name;
+      avatarBox.setAttribute('aria-label', avatarLabel(profile, name));
       avatarBox.innerHTML = profile.photoDataUrl
         ? `<img class="avatar-photo" src="${profile.photoDataUrl}" alt="">`
         : initialsFrom(name);
