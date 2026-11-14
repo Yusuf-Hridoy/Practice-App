@@ -7,6 +7,7 @@ export const TEST_IDS = Object.freeze({
   menuLinkMarket: 'menu-link-market',
   menuLinkPortfolio: 'menu-link-portfolio',
   menuLinkWatchlist: 'menu-link-watchlist',
+  menuLinkNews: 'menu-link-news',
   menuLinkWallet: 'menu-link-wallet',
   menuLinkRules: 'menu-link-rules',
   menuLinkProfile: 'menu-link-profile',
@@ -236,6 +237,42 @@ export const TEST_IDS = Object.freeze({
   undoChanges: 'undo-changes',
   saveChanges: 'save-changes',
   saveMessage: 'save-message',
+
+  // News box on the market page, inside the shadow root
+  newsBox: 'news-box',
+  newsBoxToggle: 'news-box-toggle',
+  newsBoxItem: 'news-box-item',
+  newsBoxLink: 'news-box-link',
+  newsBoxAll: 'news-box-all',
+
+  // News page
+  newsFilter: 'news-filter',
+  newsCount: 'news-count',
+  newsItem: 'news-item',
+  newsHeadline: 'news-headline',
+  newsTime: 'news-time',
+  newsReadMore: 'news-read-more',
+  newsSummary: 'news-summary',
+  newsLoading: 'news-loading',
+  newsEnd: 'news-end',
+  newsBackToTop: 'news-back-to-top',
+
+  // Chart hover on the stock page
+  chartHoverArea: 'chart-hover-area',
+  chartTooltip: 'chart-tooltip',
+  chartTooltipTime: 'chart-tooltip-time',
+  chartTooltipPrice: 'chart-tooltip-price',
+  chartAnnouncer: 'chart-announcer',
+
+  // Offline
+  offlineBanner: 'offline-banner',
+
+  // Idle log out
+  idleDialog: 'idle-dialog',
+  idleCountdown: 'idle-countdown',
+  idleStay: 'idle-stay',
+  idleLogout: 'idle-logout',
+  loginInfo: 'login-info',
 
   // Rules and 404
   rulesCard: 'rules-card',

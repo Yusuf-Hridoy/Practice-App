@@ -1,4 +1,5 @@
-// Pop-up messages at the bottom right. Each one closes itself after 5 seconds.
+// Pop-up messages at the bottom right. Each one closes itself after 5 seconds,
+// unless the caller asks for a shorter life.
 
 import { TEXT } from './ui-text.js';
 import { TEST_IDS } from './test-ids.js';
@@ -32,11 +33,11 @@ export function closeAllToasts() {
   for (const toast of openToasts()) removeToast(toast);
 }
 
-export function showToast({ symbol, title, detail }) {
+export function showToast({ symbol, title, detail, tone, lifeMs }) {
   const host = toastArea();
 
   const toast = document.createElement('div');
-  toast.className = 'toast';
+  toast.className = tone === 'ok' ? 'toast toast-ok' : 'toast';
   toast.setAttribute('data-testid', TEST_IDS.toast);
   toast.setAttribute('data-symbol', symbol);
   toast.setAttribute('role', 'status');
@@ -66,6 +67,7 @@ export function showToast({ symbol, title, detail }) {
   for (let i = 0; i < open.length - MAX_TOASTS; i += 1) removeToast(open[i]);
 
   // setTimeout, so Playwright's Clock API can control it.
-  toast.dataset.timer = String(window.setTimeout(() => removeToast(toast), TOAST_LIFE_MS));
+  const life = typeof lifeMs === 'number' ? lifeMs : TOAST_LIFE_MS;
+  toast.dataset.timer = String(window.setTimeout(() => removeToast(toast), life));
   return toast;
 }

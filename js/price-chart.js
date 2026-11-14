@@ -1,6 +1,11 @@
 // Draws the SVG price charts. Charts are built once and then updated in place.
+// The big chart also has a hover point: a dashed line, a dot and a small box
+// with the time and the price. It works with the mouse and with the keyboard.
 
 import { stepClockText } from './price-engine.js';
+import { formatMoney } from './money-format.js';
+import { TEXT, chartPointText } from './ui-text.js';
+import { TEST_IDS } from './test-ids.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -13,6 +18,9 @@ const BIG = {
   bottom: 230,
   labelY: 262,
 };
+
+// How far the box sits from the point it belongs to.
+const TOOLTIP_GAP = 10;
 
 function makeSvgElement(name, attributes) {
   const node = document.createElementNS(SVG_NS, name);
@@ -81,12 +89,175 @@ export function createPriceChart(testId) {
     labels.push(text);
   }
 
-  svg.append(area, openLine, line, ...labels);
+  // The hover point: a dashed line down the chart and a dot on the price line.
+  const hoverGroup = makeSvgElement('g', { visibility: 'hidden', 'aria-hidden': 'true' });
+  const hoverLine = makeSvgElement('line', {
+    stroke: 'var(--text-muted)',
+    'stroke-width': '1.5',
+    'stroke-dasharray': '4 4',
+    x1: BIG.left,
+    x2: BIG.left,
+    y1: BIG.top,
+    y2: BIG.bottom,
+  });
+  const hoverDot = makeSvgElement('circle', {
+    r: '5',
+    cx: BIG.left,
+    cy: BIG.bottom,
+    fill: 'var(--up)',
+    stroke: 'var(--bg)',
+    'stroke-width': '2',
+  });
+  hoverGroup.append(hoverLine, hoverDot);
 
-  function update({ points, openCents, ariaLabel, goingUp }) {
+  svg.append(area, openLine, line, hoverGroup, ...labels);
+
+  // The box with the time and the price is plain HTML, so it can sit over the
+  // chart and flip sides near the right edge.
+  const host = document.createElement('div');
+  host.className = 'chart-hover-area';
+  host.setAttribute('data-testid', TEST_IDS.chartHoverArea);
+  host.setAttribute('tabindex', '0');
+  host.setAttribute('aria-label', TEXT.stock.chartKeysLabel);
+
+  const tooltip = document.createElement('div');
+  tooltip.className = 'chart-tooltip';
+  tooltip.setAttribute('data-testid', TEST_IDS.chartTooltip);
+  tooltip.setAttribute('data-cents', '0');
+  tooltip.setAttribute('data-time', '');
+  tooltip.hidden = true;
+
+  const tooltipTime = document.createElement('span');
+  tooltipTime.className = 'chart-tooltip-time';
+  tooltipTime.setAttribute('data-testid', TEST_IDS.chartTooltipTime);
+
+  const tooltipPrice = document.createElement('span');
+  tooltipPrice.className = 'chart-tooltip-price';
+  tooltipPrice.setAttribute('data-testid', TEST_IDS.chartTooltipPrice);
+
+  tooltip.append(tooltipTime, tooltipPrice);
+
+  const announcer = document.createElement('p');
+  announcer.className = 'sr-only';
+  announcer.setAttribute('role', 'status');
+  announcer.setAttribute('data-testid', TEST_IDS.chartAnnouncer);
+
+  host.append(svg, tooltip, announcer);
+
+  let points = [];
+  let xs = [];
+  let ys = [];
+  let activeIndex = null;
+
+  function hideHover() {
+    activeIndex = null;
+    hoverGroup.setAttribute('visibility', 'hidden');
+    tooltip.hidden = true;
+  }
+
+  // Puts the dashed line, the dot and the box on one point.
+  function drawHover() {
+    if (activeIndex === null || points.length === 0) return '';
+    const index = Math.min(activeIndex, points.length - 1);
+    activeIndex = index;
+
+    const point = points[index];
+    const timeText = stepClockText(point.step);
+    const priceText = formatMoney(point.cents);
+
+    hoverLine.setAttribute('x1', xs[index].toFixed(2));
+    hoverLine.setAttribute('x2', xs[index].toFixed(2));
+    hoverDot.setAttribute('cx', xs[index].toFixed(2));
+    hoverDot.setAttribute('cy', ys[index].toFixed(2));
+    hoverDot.setAttribute('fill', line.getAttribute('stroke'));
+    hoverGroup.setAttribute('visibility', 'visible');
+
+    tooltip.setAttribute('data-cents', String(point.cents));
+    tooltip.setAttribute('data-time', timeText);
+    tooltipTime.textContent = timeText;
+    tooltipPrice.textContent = priceText;
+    tooltip.hidden = false;
+
+    // Where the point sits on the screen, in page pixels.
+    const rect = svg.getBoundingClientRect();
+    const scale = rect.width === 0 ? 0 : rect.width / BIG.width;
+    const pointX = xs[index] * scale;
+    const pointY = ys[index] * scale;
+    const boxWidth = tooltip.offsetWidth;
+    const boxHeight = tooltip.offsetHeight;
+
+    // Near the right edge the box flips to the left of the point.
+    const flip = pointX + TOOLTIP_GAP + boxWidth > rect.width;
+    let left = flip ? pointX - TOOLTIP_GAP - boxWidth : pointX + TOOLTIP_GAP;
+    left = Math.max(0, Math.min(left, Math.max(0, rect.width - boxWidth)));
+
+    let top = pointY - boxHeight - TOOLTIP_GAP;
+    top = Math.max(0, Math.min(top, Math.max(0, rect.height - boxHeight)));
+
+    tooltip.style.left = `${left.toFixed(2)}px`;
+    tooltip.style.top = `${top.toFixed(2)}px`;
+
+    return chartPointText(timeText, priceText);
+  }
+
+  function moveTo(index, announce) {
+    if (points.length === 0) return;
+    activeIndex = Math.max(0, Math.min(index, points.length - 1));
+    const said = drawHover();
+    if (announce) announcer.textContent = said;
+  }
+
+  // The point nearest the mouse.
+  function indexFromClientX(clientX) {
+    const rect = svg.getBoundingClientRect();
+    if (rect.width === 0 || xs.length === 0) return 0;
+    const viewX = ((clientX - rect.left) / rect.width) * BIG.width;
+    let best = 0;
+    let bestGap = Infinity;
+    for (let i = 0; i < xs.length; i += 1) {
+      const gap = Math.abs(xs[i] - viewX);
+      if (gap < bestGap) {
+        bestGap = gap;
+        best = i;
+      }
+    }
+    return best;
+  }
+
+  host.addEventListener('mousemove', (event) => {
+    moveTo(indexFromClientX(event.clientX), false);
+  });
+  host.addEventListener('mouseleave', hideHover);
+
+  host.addEventListener('keydown', (event) => {
+    if (points.length === 0) return;
+    const last = points.length - 1;
+    const nothingYet = activeIndex === null;
+
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      moveTo(nothingYet ? last : activeIndex - 1, true);
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      moveTo(nothingYet ? last : activeIndex + 1, true);
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      moveTo(0, true);
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      moveTo(last, true);
+    } else if (event.key === 'Escape') {
+      hideHover();
+      announcer.textContent = '';
+    }
+  });
+
+  function update({ points: nextPoints, openCents, ariaLabel, goingUp }) {
+    points = nextPoints;
     const values = points.map((point) => point.cents).concat([openCents]);
     const y = scaleFor(values, BIG.top, BIG.bottom);
-    const xs = xPositions(points.length, BIG.left, BIG.right);
+    xs = xPositions(points.length, BIG.left, BIG.right);
+    ys = points.map((point) => y(point.cents));
 
     const color = goingUp ? 'var(--up)' : 'var(--down)';
     line.setAttribute('stroke', color);
@@ -99,7 +270,7 @@ export function createPriceChart(testId) {
       area.setAttribute('d', `${d} L ${BIG.right} ${BIG.bottom} L ${BIG.left} ${BIG.bottom} Z`);
     } else {
       d = points
-        .map((point, index) => `${index === 0 ? 'M' : 'L'} ${xs[index].toFixed(2)} ${y(point.cents).toFixed(2)}`)
+        .map((point, index) => `${index === 0 ? 'M' : 'L'} ${xs[index].toFixed(2)} ${ys[index].toFixed(2)}`)
         .join(' ');
       area.setAttribute('d', `${d} L ${BIG.right} ${BIG.bottom} L ${BIG.left} ${BIG.bottom} Z`);
     }
@@ -119,9 +290,12 @@ export function createPriceChart(testId) {
     }
 
     svg.setAttribute('aria-label', ariaLabel);
+
+    // New prices must not drop the point someone is reading.
+    if (activeIndex !== null) drawHover();
   }
 
-  return { element: svg, update };
+  return { element: host, svg, update, hideHover };
 }
 
 // --- mini chart in a market row ---

@@ -4,6 +4,7 @@ import { TEXT } from '../ui-text.js';
 import { TEST_IDS } from '../test-ids.js';
 import { href, goToPath } from '../app-links.js';
 import { attemptLogin, hasSession, nextFromUrl } from '../app-session.js';
+import { idleReasonFromUrl } from '../idle-timer.js';
 import { loadDemoUsers } from '../account-storage.js';
 import { logoHtml } from '../top-menu.js';
 import { formatMoney, arrowFor, directionClass } from '../money-format.js';
@@ -41,6 +42,7 @@ function render(users) {
       </div>
 
       <div class="stack">
+        <p class="box box-warn" role="status" data-testid="${TEST_IDS.loginInfo}" hidden></p>
         <form class="card stack-sm" id="login-form" novalidate>
           <h2>${TEXT.login.cardTitle}</h2>
           <div class="field">
@@ -162,6 +164,14 @@ async function start() {
 
   render(users);
   wireForm(users);
+
+  // Someone who was logged out for sitting still is told why.
+  if (idleReasonFromUrl()) {
+    const info = document.querySelector(`[data-testid="${TEST_IDS.loginInfo}"]`);
+    info.textContent = TEXT.login.idleInfo;
+    info.hidden = false;
+  }
+
   startTicker();
 }
 

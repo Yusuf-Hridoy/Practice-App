@@ -8,6 +8,8 @@ import { marketStatus } from './market-hours.js';
 import { logout } from './app-session.js';
 import { startAlertChecker } from './alert-checker.js';
 import { startKeyboardShortcuts } from './keyboard-shortcuts.js';
+import { startConnectionStatus } from './connection-status.js';
+import { startIdleTimer } from './idle-timer.js';
 import { readProfile } from './profile-storage.js';
 import { initialsFrom } from './profile-rules.js';
 
@@ -50,7 +52,7 @@ export function avatarHtml(profile, user, currentPage) {
   `;
 }
 
-// page: "market" | "portfolio" | "wallet" | "rules" | "profile"
+// page: "market" | "portfolio" | "watchlist" | "news" | "wallet" | "rules" | "profile"
 export function renderTopMenu({ page, user, account }) {
   const host = document.getElementById('top-menu');
   if (!host) return { setCash() {}, setProfile() {}, refreshStatus() {}, stop() {} };
@@ -65,6 +67,7 @@ export function renderTopMenu({ page, user, account }) {
           ${menuLinkHtml('market', TEXT.menu.market, TEST_IDS.menuLinkMarket, page)}
           ${menuLinkHtml('portfolio', TEXT.menu.portfolio, TEST_IDS.menuLinkPortfolio, page)}
           ${menuLinkHtml('watchlist', TEXT.menu.watchlist, TEST_IDS.menuLinkWatchlist, page)}
+          ${menuLinkHtml('news', TEXT.menu.news, TEST_IDS.menuLinkNews, page)}
           ${menuLinkHtml('wallet', TEXT.menu.wallet, TEST_IDS.menuLinkWallet, page)}
           ${menuLinkHtml('rules', TEXT.menu.rules, TEST_IDS.menuLinkRules, page)}
         </nav>
@@ -101,9 +104,12 @@ export function renderTopMenu({ page, user, account }) {
 
   const timer = window.setInterval(refreshStatus, 5000);
 
-  // Price alerts and the keyboard shortcuts run on every logged-in page.
+  // Price alerts, the keyboard shortcuts, the offline banner and the idle
+  // log out all run on every logged-in page.
   startAlertChecker(user);
   startKeyboardShortcuts(page);
+  startConnectionStatus();
+  startIdleTimer();
 
   return {
     setCash(cents) {

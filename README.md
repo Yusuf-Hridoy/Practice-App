@@ -119,6 +119,68 @@ the Wallet page puts the whole profile back, theme included.
 | `newbie@tradeloom.test` | `TL-7730-NB` |
 | `busy@tradeloom.test` | `TL-5090-BU` |
 
+## News
+
+The app carries **60 made-up headlines**. Nothing in them is real: no real company, person
+or place. Which headline comes first, and the time on each one, both come from the
+**seed**, so the same seed at the same time gives the same news on any computer. The newest
+headline sits on the last 10 minute mark, and each next one is 15 to 90 minutes older, so
+the list reaches back about two days. Times read *10 min ago*, *2 hours ago*,
+*Yesterday 18:20* and then *12 Nov 18:20*.
+
+The **Market news** box on the Market page is a web component, `<tradeloom-news>`, and
+everything it shows lives inside an **open shadow root**, its own styles included. It shows
+the newest 3 headlines with a stock tag and a time, and a **See all news** link. **Hide**
+leaves only the heading and a **Show** button, and the choice is saved per account under
+`tradeloom.newsbox.<email>` and remembered after a reload. On a wide screen the box sits in
+a right column; on a phone it sits under the stock table.
+
+The **News page** at `/news` starts with **10 headlines** and adds **10 more** each time you
+scroll to the end: a small marker below the list is watched with an `IntersectionObserver`,
+**Loading more news…** shows for 1 second, and then the next 10 are **added** — the items
+already on the page are never rebuilt. After all 60 it says **You've reached the end.**
+
+Filter buttons pick **All**, one stock, or **Market** for general news. The choice lives in
+the query, like `/news?stock=KRYL`, so Back walks through it, and the count line says
+*Showing 20 of 60*. **Read more** opens a headline's two-sentence summary and turns into
+**Show less**. A link like `/news?focus=n37` keeps loading, without the 1 second wait, until
+that headline is on the page, opens it, scrolls to it and puts the keyboard on it; an id
+nobody knows just leaves the normal list. Once the page is scrolled past 600px a **Back to
+top** button appears, and it puts the keyboard back on the **News** heading.
+
+## Chart hover
+
+Moving the mouse over the chart on a stock page picks the nearest point and shows a dashed
+line, a dot and a small box with the **time** and the **price** of that point. The box stays
+inside the chart and flips to the left near the right edge. Moving off the chart hides it.
+
+The chart is also reachable with the **keyboard**: Tab onto it, then **←** and **→** move one
+point, **Home** and **End** jump to the first and last point, and **Esc** hides it. Every move
+is read out in a hidden status line, like *14:25, $141.92*. It works on both **1 hour** and
+**Today**, and the point you are reading survives the 5-second price refresh.
+
+## Offline
+
+When your browser goes offline a banner says
+**You're offline. Prices are paused and buying is turned off.** The 5-second price refresh
+stops, and buying, selling, adding money and saving a price alert all answer
+**You're offline. Try again when you're back online.** in that page's own error line.
+
+When you come back, the banner goes, prices start moving again, and a green pop-up says
+**You're back online.** for 3 seconds.
+
+## Idle log out
+
+Idle log out is **always on**. A `pointerdown`, `keydown`, `wheel`, `scroll` or `touchstart`
+counts as activity, and the time of the last one is saved in `tradeloom.lastActive`, so
+**every open tab shares it**: moving in one tab resets the timer in all of them.
+
+After **14 minutes** with nothing happening, a dialog asks **Are you still there?** and
+counts down from 0:59. Activity behind the dialog does not count; only **Stay logged in**
+does. At **15 minutes**, or on **Log out now**, only the session is dropped — your cash,
+shares, history, watchlist and profile all stay — and the log in page says
+**You were logged out after 15 minutes of no activity.**
+
 ## Test switches
 
 | Switch | What it does |
@@ -139,6 +201,7 @@ The market is open all day, every day. It is closed only while the link carries
 - `/market` all stocks
 - `/stock?symbol=KRYL` one stock, with the chart and the trade box
 - `/portfolio` what you own
+- `/news` made-up market news, 10 at a time
 - `/wallet` cash, adding practice money, start over and history
 - `/receipt?id=h3` one receipt from your history, printable, in its own tab
 - `/profile` your photo, details, account ID and theme

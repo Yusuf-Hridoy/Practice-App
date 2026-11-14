@@ -34,6 +34,7 @@ import {
 import { dhakaDateKey } from '../market-hours.js';
 import { checkAdd, applyAdd, ADD_LIMIT_CENTS } from '../trade-rules.js';
 import { TEST_CARDS, PAYMENT_MESSAGE_TYPE } from '../payment-rules.js';
+import { isOffline } from '../connection-status.js';
 import {
   DEFAULT_STATE,
   cleanState,
@@ -473,6 +474,12 @@ function wireAddMoney() {
     const choice = selectedChoice();
     pick(TEST_IDS.addMessage).textContent = '';
     pick(TEST_IDS.addError).textContent = '';
+
+    if (isOffline()) {
+      closePayStep();
+      pick(TEST_IDS.addError).textContent = TEXT.connection.blocked;
+      return;
+    }
 
     // Another tab may have changed the account since this page was drawn, so
     // the saved account is read again and checked before the card form opens.

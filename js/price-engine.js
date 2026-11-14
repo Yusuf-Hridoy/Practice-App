@@ -12,7 +12,7 @@ export const STEPS_PER_HOUR = 720;
 export const MIN_PRICE_CENTS = 100;
 
 // FNV-1a 32-bit hash of a text key.
-function hashKey(text) {
+export function hashKey(text) {
   let hash = 0x811c9dc5;
   for (let i = 0; i < text.length; i += 1) {
     hash ^= text.charCodeAt(i);
@@ -22,7 +22,7 @@ function hashKey(text) {
 }
 
 // mulberry32 seeded generator.
-function mulberry32(seed) {
+export function mulberry32(seed) {
   let state = seed >>> 0;
   return function next() {
     state = (state + 0x6d2b79f5) >>> 0;

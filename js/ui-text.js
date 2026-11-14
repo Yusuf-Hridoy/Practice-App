@@ -18,6 +18,7 @@ export const TEXT = Object.freeze({
     market: 'Market',
     portfolio: 'Portfolio',
     watchlist: 'Watchlist',
+    news: 'News',
     wallet: 'Wallet',
     rules: 'Rules',
     profile: 'Your profile',
@@ -43,6 +44,7 @@ export const TEXT = Object.freeze({
     howItWorks: 'How it works',
     missingFields: 'Enter your email and password.',
     wrongPair: 'Wrong email or password. Try again.',
+    idleInfo: 'You were logged out after 15 minutes of no activity.',
   },
 
   market: {
@@ -82,6 +84,7 @@ export const TEXT = Object.freeze({
     rangeHour: '1 hour',
     rangeToday: 'Today',
     chartNote: 'Dashed line = price at the start of today.',
+    chartKeysLabel: 'Price chart. Use the arrow keys to read the price at each point.',
     factsTitle: 'Today',
     factOpen: 'Opened today at',
     factHigh: 'Highest today',
@@ -238,6 +241,7 @@ export const TEXT = Object.freeze({
       { key: 'watchlist', title: 'Watchlist', body: 'Up to 6 stocks. One alert per stock. An alert fires once when the price crosses it, then shows Hit.' },
       { key: 'profile', title: 'Profile', body: 'Photos must be PNG, JPG or WebP, up to 1 MB. You must be 18 or older. Your theme is saved for your account.' },
       { key: 'payments', title: 'Payments', body: 'Adding money needs a test card. Receipts open in a new tab. History shows 10 rows per page.' },
+      { key: 'news-safety', title: 'News and safety', body: 'News is made up. When you go offline, buying stops. After 15 minutes with no activity, you\'re logged out.' },
     ],
     switchesTitle: 'Test switches',
     switchName: '?seed=42',
@@ -349,6 +353,39 @@ export const TEXT = Object.freeze({
     saveFailed: "Couldn't save your changes. Your browser's storage is full.",
     unsaved: 'You have unsaved changes.',
     undo: 'Undo changes',
+  },
+
+  news: {
+    title: 'News',
+    intro: 'Made-up headlines for practice. Not real news.',
+    boxTitle: 'Market news',
+    hide: 'Hide',
+    show: 'Show',
+    seeAll: 'See all news',
+    filterAll: 'All',
+    filterMarket: 'Market',
+    marketTag: 'Market',
+    filtersLabel: 'Filter news by stock',
+    readMore: 'Read more',
+    showLess: 'Show less',
+    loading: 'Loading more news\u2026',
+    end: 'You\'ve reached the end.',
+    backToTop: 'Back to top',
+    justNow: 'Just now',
+  },
+
+  connection: {
+    offlineBanner: 'You\'re offline. Prices are paused and buying is turned off.',
+    blocked: 'You\'re offline. Try again when you\'re back online.',
+    backOnline: 'You\'re back online.',
+  },
+
+  idle: {
+    dialogTitle: 'Are you still there?',
+    bodyStart: 'You\'ll be logged out in ',
+    bodyEnd: ' because nothing happened for 14 minutes.',
+    logoutNow: 'Log out now',
+    stay: 'Stay logged in',
   },
 
   toast: {
@@ -649,6 +686,49 @@ export function toastTitle(symbol, directionWord, priceText) {
 
 export function toastDetail(priceText) {
   return `Now ${priceText}.`;
+}
+
+// --- chart hover ---
+
+// What the hidden status line says on each move, like "14:25, $141.92".
+export function chartPointText(timeText, priceText) {
+  return `${timeText}, ${priceText}`;
+}
+
+// --- news ---
+
+export function minutesAgoText(minutes) {
+  return `${minutes} min ago`;
+}
+
+export function hoursAgoText(hours) {
+  return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+}
+
+export function yesterdayAtText(clockText) {
+  return `${TIME_TEXT.yesterday} ${clockText}`;
+}
+
+export function dateAtText(dateText, clockText) {
+  return `${dateText} ${clockText}`;
+}
+
+export function shortDateText(day, monthName) {
+  return `${day} ${monthName}`;
+}
+
+export function newsCountText(shown, total) {
+  return `Showing ${shown} of ${total}`;
+}
+
+// --- idle log out ---
+
+// A countdown like "0:59".
+export function idleCountdownText(secondsLeft) {
+  const safe = Math.max(0, secondsLeft);
+  const minutes = Math.floor(safe / 60);
+  const seconds = safe % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
 // --- profile ---

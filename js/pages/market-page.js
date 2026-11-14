@@ -19,6 +19,8 @@ import { createMiniChart } from '../price-chart.js';
 import { totalWorthCents, stocksChangeSinceOpenCents, ownedShares } from '../trade-rules.js';
 import { readWatchlist, changeWatchlist } from '../watchlist-storage.js';
 import { addSymbol, removeSymbol, isOnWatchlist } from '../watchlist-rules.js';
+import { isOffline, CONNECTION_CHANGED } from '../connection-status.js';
+import { NEWS_BOX_TAG } from '../components/news-box.js';
 
 const REFRESH_MS = 5000;
 
@@ -53,6 +55,7 @@ function shellHtml() {
 
       <h1>${TEXT.market.title}</h1>
 
+      <div class="grid-2-1">
       <div class="card stack-sm">
         <div class="field">
           <label for="market-search-input">${TEXT.market.searchLabel}</label>
@@ -105,6 +108,9 @@ function shellHtml() {
           <p class="muted">${TEXT.market.errorBody}</p>
           <div><button type="button" class="btn btn-accent" data-testid="${TEST_IDS.marketRetry}">${TEXT.common.tryAgain}</button></div>
         </div>
+      </div>
+
+      <${NEWS_BOX_TAG} email="${session.user.email}"></${NEWS_BOX_TAG}>
       </div>
 
       <p class="muted small">${TEXT.market.footer}</p>
@@ -303,6 +309,18 @@ function refresh() {
   applyFilters();
 }
 
+// Prices are paused while the internet is down.
+function startRefresh() {
+  if (refreshTimer !== null || isOffline()) return;
+  refreshTimer = window.setInterval(refresh, REFRESH_MS);
+}
+
+function stopRefresh() {
+  if (refreshTimer === null) return;
+  window.clearInterval(refreshTimer);
+  refreshTimer = null;
+}
+
 function setFilter(name) {
   activeFilter = name;
   const map = {
@@ -337,6 +355,14 @@ function wire() {
   document.querySelector(`[data-testid="${TEST_IDS.filterOwned}"]`).addEventListener('click', () => setFilter('owned'));
 
   document.querySelector(`[data-testid="${TEST_IDS.marketRetry}"]`).addEventListener('click', loadStocks);
+
+  window.addEventListener(CONNECTION_CHANGED, (event) => {
+    if (event.detail.offline) stopRefresh();
+    else {
+      if (stocks.length > 0) refresh();
+      startRefresh();
+    }
+  });
 }
 
 async function loadStocks() {
@@ -365,7 +391,7 @@ async function loadStocks() {
 
   buildRows();
   refresh();
-  if (refreshTimer === null) refreshTimer = window.setInterval(refresh, REFRESH_MS);
+  startRefresh();
 }
 
 async function start() {

@@ -34,6 +34,7 @@ import {
 } from '../money-format.js';
 import { priceNowCents, changeSinceOpen } from '../price-engine.js';
 import { readWatchlist, changeWatchlist } from '../watchlist-storage.js';
+import { isOffline, CONNECTION_CHANGED } from '../connection-status.js';
 import {
   addSymbol,
   removeSymbol,
@@ -62,6 +63,7 @@ let editorSymbol = null;
 let editorRange = { lowCents: 0, highCents: 0 };
 let editorPriceNowCents = 0;
 let draggedSymbol = null;
+let refreshTimer = null;
 
 function pick(testId) {
   return document.querySelector(`[data-testid="${testId}"]`);
@@ -408,6 +410,11 @@ function saveEditorAlert() {
   if (!editorSymbol) return;
   clearEditorMessages();
 
+  if (isOffline()) {
+    pick(TEST_IDS.alertError).textContent = TEXT.connection.blocked;
+    return;
+  }
+
   const direction = pick(TEST_IDS.alertDirectionBelow).checked ? 'below' : 'above';
   const checked = checkAlert({
     priceText: pick(TEST_IDS.alertPriceInput).value,
@@ -604,6 +611,18 @@ function wire() {
   });
 }
 
+// Prices are paused while the internet is down.
+function startRefresh() {
+  if (refreshTimer !== null || isOffline()) return;
+  refreshTimer = window.setInterval(refresh, REFRESH_MS);
+}
+
+function stopRefresh() {
+  if (refreshTimer === null) return;
+  window.clearInterval(refreshTimer);
+  refreshTimer = null;
+}
+
 async function start() {
   session = await requireSession();
   if (!session) return;
@@ -625,7 +644,15 @@ async function start() {
   updateBrowserBits();
   renderRows();
 
-  window.setInterval(refresh, REFRESH_MS);
+  startRefresh();
+
+  window.addEventListener(CONNECTION_CHANGED, (event) => {
+    if (event.detail.offline) stopRefresh();
+    else {
+      refresh();
+      startRefresh();
+    }
+  });
 }
 
 start();

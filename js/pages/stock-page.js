@@ -41,6 +41,7 @@ import {
   chartPoints,
 } from '../price-engine.js';
 import { createPriceChart } from '../price-chart.js';
+import { isOffline, CONNECTION_CHANGED } from '../connection-status.js';
 import {
   parseShares,
   checkBuy,
@@ -415,7 +416,24 @@ function checkNow(nowMs) {
   return { result, priceCents };
 }
 
+// Prices are paused while the internet is down.
+function startRefresh() {
+  if (refreshTimer !== null || isOffline()) return;
+  refreshTimer = window.setInterval(refresh, REFRESH_MS);
+}
+
+function stopRefresh() {
+  if (refreshTimer === null) return;
+  window.clearInterval(refreshTimer);
+  refreshTimer = null;
+}
+
 function openConfirm() {
+  if (isOffline()) {
+    showError(TEXT.connection.blocked);
+    return;
+  }
+
   const nowMs = Date.now();
   const { result, priceCents } = checkNow(nowMs);
   if (!result.ok) {
@@ -459,6 +477,13 @@ function showSuccess(title, detail) {
 function confirmTrade() {
   const nowMs = Date.now();
   const dialog = pick(TEST_IDS.confirmDialog);
+
+  // The internet can drop while the dialog is open.
+  if (isOffline()) {
+    dialog.close();
+    showError(TEXT.connection.blocked);
+    return;
+  }
 
   // Another tab may have traded since this page was drawn, so the saved
   // account is read again and checked before anything is written.
@@ -551,6 +576,7 @@ async function buildPage() {
     window.clearInterval(refreshTimer);
     refreshTimer = null;
   }
+  chart = null;
 
   let stocks;
   try {
@@ -582,13 +608,22 @@ async function buildPage() {
   wire();
   setMode(queryValue('mode').toLowerCase() === 'sell' ? 'sell' : 'buy');
   refresh();
-  refreshTimer = window.setInterval(refresh, REFRESH_MS);
+  startRefresh();
 }
 
 async function start() {
   session = await requireSession();
   if (!session) return;
   account = session.account;
+
+  window.addEventListener(CONNECTION_CHANGED, (event) => {
+    if (event.detail.offline) stopRefresh();
+    else if (stock && chart) {
+      refresh();
+      startRefresh();
+    }
+  });
+
   await buildPage();
 }
 
