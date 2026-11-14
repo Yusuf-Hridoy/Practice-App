@@ -59,7 +59,7 @@ The `trader@tradeloom.test` account starts with NOVA, PIXEL, BRISK and OAKFIN on
 watchlist, and one alert set for NOVA above $55.00. `newbie@tradeloom.test` starts with an
 empty watchlist. **Start over** on the Wallet page clears the watchlist back to that start.
 
-## Payments and receipts
+## Payments and receipt
 
 Adding practice money on the Wallet page goes through a **card form in an iframe**. Pick an
 amount, press **Add**, and a **Pay by card** step appears with the three test cards and the
