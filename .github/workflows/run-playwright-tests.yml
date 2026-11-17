@@ -1,0 +1,69 @@
+# Runs the Playwright suite against production after each successful deploy.
+#
+# Vercel creates the deployment and posts its own deployment_status events, so
+# nothing here has to talk to Vercel. Only a successful Production deployment
+# starts a run; preview builds are left alone. The tests live in a separate,
+# public repository, so they are checked out here and run in place -- no token
+# and no cross-repository dispatch involved.
+name: Playwright tests
+
+on:
+  deployment_status:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One run at a time: a newer deploy makes an in-flight run pointless.
+concurrency:
+  group: playwright-tests
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Run the suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       startsWith(github.event.deployment.environment, 'Production'))
+    steps:
+      - name: Check out the tests
+        uses: actions/checkout@v7
+        with:
+          repository: Yusuf-Hridoy/Playwright-Project
+          path: tests
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: tests/package-lock.json
+
+      - name: Install dependencies
+        working-directory: tests
+        run: npm ci
+
+      - name: Install the Chromium browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Run the tests
+        working-directory: tests
+        env:
+          # The stable production link, not the deployment's own URL: Vercel can
+          # put protection in front of a per-deployment URL, and the tests have
+          # to be able to open it.
+          BASE_URL: https://practiceapp-six.vercel.app
+          CI: true
+        run: npx playwright test --project=chromium --grep-invert @visual
+
+      - name: Upload the report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: tests/playwright-report
+          retention-days: 14
