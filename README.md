@@ -43,7 +43,7 @@ Password for all three: `Play123!`
 | `newbie@tradeloom.test` | $10,000 cash, no stocks |
 | `busy@tradeloom.test` | $28,084.50 cash, 7 stocks and 24 rows of history |
 
-## Watchlist
+## Watchlist ++
 
 The Watchlist page keeps up to **6 stocks** in whatever order you drag them into, with
 **one price alert per stock**. Add a stock from the select on that page, or tap the start on
