@@ -14,15 +14,16 @@ on:
 permissions:
   contents: read
 
-# One run at a time: a newer deploy makes an in-flight run pointless.
-concurrency:
-  group: playwright-tests
-  cancel-in-progress: true
-
 jobs:
   test:
     name: Run the suite
     runs-on: ubuntu-latest
+    # One run at a time: a newer deploy makes an in-flight run pointless. This
+    # sits on the job rather than the workflow so that a deployment_status event
+    # the if: below skips never cancels a run that is actually testing.
+    concurrency:
+      group: playwright-tests
+      cancel-in-progress: true
     timeout-minutes: 30
     if: >-
       github.event_name == 'workflow_dispatch' ||
