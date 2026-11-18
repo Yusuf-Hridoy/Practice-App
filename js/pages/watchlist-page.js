@@ -18,6 +18,7 @@ import {
   alertSavedMessage,
 } from '../ui-text.js';
 import { TEST_IDS } from '../test-ids.js';
+import { loadStocks } from '../data-loader.js';
 import { href } from '../app-links.js';
 import { requireSession } from '../app-session.js';
 import { renderTopMenu } from '../top-menu.js';
@@ -631,9 +632,7 @@ async function start() {
   renderTopMenu({ page: 'watchlist', user: session.user, account: session.account });
 
   try {
-    const response = await fetch('/data/stocks.json');
-    if (!response.ok) throw new Error('Could not load stocks');
-    stocks = await response.json();
+    stocks = await loadStocks();
   } catch (error) {
     stocks = [];
   }

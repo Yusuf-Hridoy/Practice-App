@@ -99,14 +99,16 @@ function cloneAccount(account) {
 
 // --- buying ---
 
-export function checkBuy({ sharesRaw, priceCents, account, symbol, nowMs = Date.now() }) {
+// costOf lets the caller work out the cost itself. Only the stock page uses
+// it, for the bug=cost test switch. Left out, the cost is shares x price.
+export function checkBuy({ sharesRaw, priceCents, account, symbol, nowMs = Date.now(), costOf = null }) {
   const shares = parseShares(sharesRaw);
   if (!shares.ok) return shares;
 
   const closed = marketClosedError();
   if (closed) return { ok: false, error: closed };
 
-  const costCents = shares.shares * priceCents;
+  const costCents = costOf ? costOf(shares.shares, priceCents) : shares.shares * priceCents;
   if (costCents > account.cashCents) {
     const maxShares = maxAffordableShares(account.cashCents, priceCents);
     if (maxShares === 0) return { ok: false, error: cannotAffordOneMessage(symbol) };
@@ -125,14 +127,14 @@ export function checkBuy({ sharesRaw, priceCents, account, symbol, nowMs = Date.
   return { ok: true, shares: shares.shares, costCents };
 }
 
-export function applyBuy(account, { symbol, shares, priceCents, nowMs = Date.now() }) {
+export function applyBuy(account, { symbol, shares, priceCents, nowMs = Date.now(), costCents = null }) {
   const next = cloneAccount(account);
-  const costCents = shares * priceCents;
+  const paidCents = costCents === null ? shares * priceCents : costCents;
 
-  next.cashCents -= costCents;
+  next.cashCents -= paidCents;
   const holding = next.holdings[symbol] || { shares: 0, totalPaidCents: 0 };
   holding.shares += shares;
-  holding.totalPaidCents += costCents;
+  holding.totalPaidCents += paidCents;
   next.holdings[symbol] = holding;
 
   next.history.push({
@@ -142,11 +144,11 @@ export function applyBuy(account, { symbol, shares, priceCents, nowMs = Date.now
     symbol,
     shares,
     priceCents,
-    amountCents: -costCents,
+    amountCents: -paidCents,
     cashAfterCents: next.cashCents,
   });
 
-  return { account: next, costCents, cashAfterCents: next.cashCents };
+  return { account: next, costCents: paidCents, cashAfterCents: next.cashCents };
 }
 
 // --- selling ---
@@ -214,12 +216,13 @@ export function sellGainPreviewCents(account, symbol, shares, priceCents) {
 
 // --- adding practice money ---
 
-export function addLeftCents(account) {
-  return Math.max(0, ADD_LIMIT_CENTS - account.totalAddedCents);
+export function addLeftCents(account, limitCents = ADD_LIMIT_CENTS) {
+  return Math.max(0, limitCents - account.totalAddedCents);
 }
 
-export function checkAdd(account, amountCents) {
-  const left = addLeftCents(account);
+// limitCents is only ever different for the bug=limit test switch.
+export function checkAdd(account, amountCents, limitCents = ADD_LIMIT_CENTS) {
+  const left = addLeftCents(account, limitCents);
   if (left === 0) return { ok: false, error: addLimitReachedMessage() };
   if (amountCents > left) return { ok: false, error: addLimitLeftMessage(formatMoney(left)) };
   return { ok: true, amountCents };

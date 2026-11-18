@@ -3,6 +3,7 @@
 
 import { TEXT, newsCountText } from '../ui-text.js';
 import { TEST_IDS } from '../test-ids.js';
+import { loadStocks } from '../data-loader.js';
 import { href } from '../app-links.js';
 import { requireSession } from '../app-session.js';
 import { renderTopMenu } from '../top-menu.js';
@@ -289,9 +290,7 @@ function wireBackToTop() {
 
 async function loadSymbols() {
   try {
-    const response = await fetch('/data/stocks.json');
-    if (!response.ok) throw new Error('Could not load stocks');
-    const stocks = await response.json();
+    const stocks = await loadStocks();
     return stocks.map((stock) => stock.symbol);
   } catch (error) {
     // The headlines already say which stock they belong to.

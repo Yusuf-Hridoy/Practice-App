@@ -2,11 +2,13 @@
 
 import { TEXT } from '../ui-text.js';
 import { TEST_IDS } from '../test-ids.js';
+import { loadStocks } from '../data-loader.js';
 import { href, goToPath } from '../app-links.js';
 import { attemptLogin, hasSession, nextFromUrl } from '../app-session.js';
 import { idleReasonFromUrl } from '../idle-timer.js';
 import { loadDemoUsers } from '../account-storage.js';
 import { logoHtml } from '../top-menu.js';
+import { driftLabel } from '../drift.js';
 import { formatMoney, arrowFor, directionClass } from '../money-format.js';
 import { priceNowCents, changeSinceOpen } from '../price-engine.js';
 
@@ -44,7 +46,7 @@ function render(users) {
       <div class="stack">
         <p class="box box-warn" role="status" data-testid="${TEST_IDS.loginInfo}" hidden></p>
         <form class="card stack-sm" id="login-form" novalidate>
-          <h2>${TEXT.login.cardTitle}</h2>
+          <h2>${driftLabel(TEXT.login.cardTitle)}</h2>
           <div class="field">
             <label for="login-email-input">${TEXT.login.emailLabel}</label>
             <input type="email" id="login-email-input" name="email" autocomplete="username"
@@ -56,7 +58,7 @@ function render(users) {
                    data-testid="${TEST_IDS.loginPassword}">
           </div>
           <button type="submit" class="btn btn-accent btn-block" data-testid="${TEST_IDS.loginSubmit}">
-            ${TEXT.login.submit}
+            ${driftLabel(TEXT.login.submit)}
           </button>
           <p class="error-text" role="alert" data-testid="${TEST_IDS.loginError}"></p>
         </form>
@@ -123,9 +125,7 @@ async function startTicker() {
   const host = document.getElementById('login-ticker');
   let stocks;
   try {
-    const response = await fetch('/data/stocks.json');
-    if (!response.ok) throw new Error('no stocks');
-    stocks = await response.json();
+    stocks = await loadStocks();
   } catch (error) {
     return; // The log in form still works without live prices.
   }

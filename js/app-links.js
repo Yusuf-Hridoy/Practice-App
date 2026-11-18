@@ -1,6 +1,12 @@
 // Builds every link and redirect, so the app works both on a local
 // python -m http.server (which needs .html) and on Vercel (clean URLs).
 // It also copies the ?seed and ?market switches onto every link, so they survive page changes.
+// Every test switch rides along the same way, so a switch stays on while you click around.
+//
+// The API imports this file (through the price engine) to ask for the seed.
+// Node has no window, so everything that reads the page link is guarded.
+
+import { switchParams } from './test-switches.js';
 
 export const DEFAULT_SEED = 'tradeloom';
 
@@ -16,8 +22,24 @@ const PAGE_FILES = Object.freeze({
   rules: 'rules',
   paymentFrame: 'payment-frame',
   receipt: 'receipt',
+  switches: 'switches',
+  changelog: 'changelog',
   notFound: '404',
 });
+
+// There is no page link in Node. The API sets the seed itself instead.
+let seedOverride = null;
+
+export function setSeedOverride(value) {
+  seedOverride = value === null || value === undefined || String(value).trim() === ''
+    ? null
+    : String(value).trim();
+}
+
+function linkParams() {
+  if (typeof window === 'undefined' || !window.location) return new URLSearchParams('');
+  return new URLSearchParams(window.location.search);
+}
 
 export function isLocalHost() {
   const host = window.location.hostname;
@@ -25,7 +47,8 @@ export function isLocalHost() {
 }
 
 export function getSeed() {
-  const value = new URLSearchParams(window.location.search).get('seed');
+  if (seedOverride !== null) return seedOverride;
+  const value = linkParams().get('seed');
   const trimmed = (value || '').trim();
   return trimmed === '' ? null : trimmed;
 }
@@ -38,7 +61,7 @@ export function seedValue() {
 export const MARKET_CLOSED = 'closed';
 
 export function getMarket() {
-  const value = new URLSearchParams(window.location.search).get('market');
+  const value = linkParams().get('market');
   const trimmed = (value || '').trim();
   return trimmed === '' ? null : trimmed;
 }
@@ -47,14 +70,18 @@ export function isMarketClosedLink() {
   return getMarket() === MARKET_CLOSED;
 }
 
-export function href(page, params = {}) {
+// Just the path of a page, with nothing in the query. The Test switches page
+// builds its own link, so it needs the path without today's switches on it.
+export function pagePath(page) {
   const file = PAGE_FILES[page];
   if (!file) throw new Error(`Unknown page: ${page}`);
-
   const local = isLocalHost();
-  let path;
-  if (page === 'login') path = local ? '/index.html' : '/';
-  else path = local ? `/${file}.html` : `/${file}`;
+  if (page === 'login') return local ? '/index.html' : '/';
+  return local ? `/${file}.html` : `/${file}`;
+}
+
+export function href(page, params = {}) {
+  const path = pagePath(page);
 
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -67,6 +94,10 @@ export function href(page, params = {}) {
 
   const market = getMarket();
   if (market && !query.has('market')) query.set('market', market);
+
+  for (const [key, value] of Object.entries(switchParams())) {
+    if (!query.has(key)) query.set(key, value);
+  }
 
   const text = query.toString();
   return text === '' ? path : `${path}?${text}`;
@@ -93,15 +124,20 @@ export function isSafeNext(value) {
   return true;
 }
 
-// Keeps the ?seed and ?market switches on a path the app sends someone to.
+// Keeps the ?seed and ?market switches, and every test switch, on a path the
+// app sends someone to.
 export function withSeed(path) {
   const seed = getSeed();
   const market = getMarket();
-  if (!seed && !market) return path;
+  const switches = switchParams();
+  if (!seed && !market && Object.keys(switches).length === 0) return path;
   const [base, search = ''] = path.split('?');
   const query = new URLSearchParams(search);
   if (seed && !query.has('seed')) query.set('seed', seed);
   if (market && !query.has('market')) query.set('market', market);
+  for (const [key, value] of Object.entries(switches)) {
+    if (!query.has(key)) query.set(key, value);
+  }
   const text = query.toString();
   return text === '' ? base : `${base}?${text}`;
 }

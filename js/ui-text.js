@@ -1,5 +1,10 @@
 // Every piece of text people see lives here.
 
+// The version this app says it is. The Changelog, the version link and
+// GET /api/health all read it from here.
+export const APP_VERSION = '1.6.0';
+
+
 export const TEXT = Object.freeze({
   brand: 'Tradeloom',
 
@@ -43,6 +48,7 @@ export const TEXT = Object.freeze({
     howItWorks: 'How it works',
     missingFields: 'Enter your email and password.',
     wrongPair: 'Wrong email or password. Try again.',
+    checkFailed: "We couldn't check your details. Try again.",
     idleInfo: 'You were logged out after 15 minutes of no activity.',
   },
 
@@ -243,9 +249,17 @@ export const TEXT = Object.freeze({
       { key: 'news-safety', title: 'News and safety', body: 'News is made up. When you go offline, buying stops. After 15 minutes with no activity, you\'re logged out.' },
     ],
     switchesTitle: 'Test switches',
-    switchName: '?seed=42',
-    switchBody: 'Same prices every time',
-    switchesNote: 'More switches come in a later version.',
+    switchesLink: 'Test switches',
+    switchesNote: 'Put any of these in a link. They are copied onto every link you follow from there.',
+    switchList: [
+      { name: '?seed=42', body: 'Same prices every time' },
+      { name: '?market=closed', body: 'Closes the market. You can look at prices, but not buy or sell' },
+      { name: '?slow=3000', body: 'Every data load waits that many milliseconds, 0 to 10000' },
+      { name: '?api=500', body: 'Every data load fails like a server error' },
+      { name: '?flaky=on', body: 'Some data loads fail or lag, decided by the seed' },
+      { name: '?bug=cost,gain,limit,sort,search', body: 'Turns on those bugs. Pick one or more' },
+      { name: '?drift=text,ids,layout,popup', body: 'Renames labels, changes test ids, moves parts, shows popups. drift=all turns on all four' },
+    ],
   },
 
   watchlist: {
@@ -395,6 +409,130 @@ export const TEXT = Object.freeze({
     title: 'Page not found',
     body: 'This page doesn\'t exist.',
   },
+
+  switches: {
+    barPrefix: 'Test switches on:',
+    change: 'Change',
+    title: 'Test switches',
+    intro: 'Turn on switches to make the app slow, broken or different. For practice only.',
+    speedLegend: 'Speed and errors',
+    slowLabel: 'Slow loading',
+    slowOff: 'Off',
+    slow1000: '1 second',
+    slow3000: '3 seconds',
+    slow5000: '5 seconds',
+    apiLabel: 'Data fails to load',
+    flakyLabel: 'Flaky mode',
+    bugsLegend: 'Bugs',
+    bugCost: 'Wrong total cost',
+    bugGain: 'Gain shows wrong sign',
+    bugLimit: 'Limit lets you pass $50,000',
+    bugSort: 'Sort goes the wrong way',
+    bugSearch: 'Search is case-sensitive',
+    driftLegend: 'Drift',
+    driftText: 'Renamed buttons',
+    driftIds: 'Changed test ids',
+    driftLayout: 'Moved layout',
+    driftPopup: 'Surprise popups',
+    linkTitle: 'Your link',
+    copy: 'Copy link',
+    copied: 'Copied!',
+    copyFailed: "Couldn't copy. Select the link and copy it yourself.",
+    open: 'Open with these switches',
+    turnOff: 'Turn all off',
+  },
+
+  popups: {
+    cookieBody: 'We use cookies to remember your settings.',
+    cookieAccept: 'Accept',
+    cookieReject: 'Reject',
+    proTitle: 'Try Tradeloom Pro',
+    proBody: 'Get faster prices and more charts.',
+    proNoThanks: 'No thanks',
+    proLearnMore: 'Learn more',
+  },
+
+  changelog: {
+    title: 'Changelog',
+    intro: 'Every version of Tradeloom, newest first.',
+    versionLabel: 'v1.6.0',
+    versions: [
+      {
+        version: '1.6.0',
+        title: 'Test switches, API and this page',
+        lines: [
+          'Switches in the link make the app slow, broken or different.',
+          'A small API under /api, for API testing.',
+          'A Test switches page that builds the link for you.',
+          'This changelog.',
+        ],
+      },
+      {
+        version: '1.5.0',
+        title: 'News, chart hover, offline and idle log out',
+        lines: [
+          '60 made-up headlines, with a news box on the Market page.',
+          'Hover or use the arrow keys to read any point on a price chart.',
+          'An offline banner pauses prices and turns off buying.',
+          'You are logged out after 15 minutes of no activity.',
+        ],
+      },
+      {
+        version: '1.4.0',
+        title: 'Card payments, receipts and history pages',
+        lines: [
+          'Adding practice money goes through a card form in a frame.',
+          'Every history row has a printable receipt of its own.',
+          'The history has type and date filters, and 10 rows per page.',
+        ],
+      },
+      {
+        version: '1.3.0',
+        title: 'Profile',
+        lines: [
+          'A photo, display name, date of birth, country and favorite sectors.',
+          'Dark, Light or Match my device, saved for your account.',
+          'An account ID you can copy.',
+        ],
+      },
+      {
+        version: '1.2.0',
+        title: 'Watchlist',
+        lines: [
+          'Up to 6 stocks, in the order you drag them into.',
+          'One price alert per stock, above or below a price you pick.',
+          'A pop-up message in the app, and a browser alert if you allow one.',
+        ],
+      },
+      {
+        version: '1.1.0',
+        title: 'Market open all day',
+        lines: [
+          'The market is open all day, every day of the week.',
+          'Add market=closed to any link to test the closed market.',
+        ],
+      },
+      {
+        version: '1.0.0',
+        title: 'First release',
+        lines: [
+          'Log in with a demo account and $10,000 of practice money.',
+          'Buy and sell 8 made-up stocks with prices that move every 5 seconds.',
+          'A market page, a portfolio and a wallet with history.',
+        ],
+      },
+    ],
+  },
+
+  api: {
+    useGet: 'Use GET for this address.',
+    usePost: 'Use POST for this address.',
+    badAt: 'The at value must be a date and time.',
+    badLimit: 'The limit must be a whole number from 1 to 60.',
+    badOffset: 'The offset must be a whole number, 0 or more.',
+    loginFields: 'Send an email and a password.',
+    serverProblem: 'The server had a problem. Try again.',
+  },
 });
 
 export const TIME_TEXT = Object.freeze({
@@ -521,6 +659,31 @@ export function paidNote(totalPaidText) {
 
 export function addButtonText(amountLabel) {
   return `Add ${amountLabel}`;
+}
+
+// --- the labels the drift=text switch swaps in ---
+//
+// Eleven labels, and nothing else. Messages and error texts never change.
+// js/drift.js is the only file that reads this.
+
+export const DRIFT_TEXT = Object.freeze({
+  swaps: Object.freeze({
+    'Log in': 'Sign in',
+    'Log out': 'Sign out',
+    Market: 'Stocks',
+    'Search stocks': 'Find a stock',
+    'How many shares?': 'Quantity',
+    'Confirm buy': 'Yes, buy',
+    'Confirm sell': 'Yes, sell',
+    'Save changes': 'Update profile',
+  }),
+  buyMainButton: 'Place buy order',
+  sellMainButton: 'Place sell order',
+  addButtonWord: 'Top up',
+});
+
+export function driftAddButtonText(amountLabel) {
+  return `${DRIFT_TEXT.addButtonWord} ${amountLabel}`;
 }
 
 export function addedSoFarText(totalAddedText) {

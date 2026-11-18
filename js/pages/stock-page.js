@@ -6,8 +6,6 @@ import {
   marketClosedMessage,
   sharesWord,
   maxButtonText,
-  buyButtonText,
-  sellButtonText,
   confirmBuyTitle,
   confirmSellTitle,
   boughtTitle,
@@ -21,6 +19,9 @@ import {
   chartLabelHour,
 } from '../ui-text.js';
 import { TEST_IDS } from '../test-ids.js';
+import { loadStocks } from '../data-loader.js';
+import { driftLabel, tradeButtonText, isLayoutDrift, startPromoDialog } from '../drift.js';
+import { isBugOn } from '../test-switches.js';
 import { href } from '../app-links.js';
 import { requireSession } from '../app-session.js';
 import { renderTopMenu } from '../top-menu.js';
@@ -67,6 +68,24 @@ let chartRange = 'today';
 let mode = 'buy';
 let reviewPriceCents = 0;
 let refreshTimer = null;
+
+// bug=cost: for 2 or more shares the total cost, and the money taken, are one
+// share too high. The summary, the confirm box, the success message and the
+// cash all agree with that one wrong number.
+function buyCostCents(shares, priceCents) {
+  if (isBugOn('cost') && shares >= 2) return (shares + 1) * priceCents;
+  return shares * priceCents;
+}
+
+// drift=layout: the trade box moves to the left of the chart. The same two
+// columns, in the other order, with the same elements, text and ids.
+function applyLayoutDrift() {
+  if (!isLayoutDrift()) return;
+  const grid = document.querySelector('.grid-2-1');
+  if (!grid || !grid.firstElementChild) return;
+  grid.classList.add('grid-flip');
+  grid.append(grid.firstElementChild);
+}
 
 function queryValue(name) {
   return new URLSearchParams(window.location.search).get(name) || '';
@@ -177,7 +196,7 @@ function pageHtml() {
               <div class="box box-warn" data-testid="${TEST_IDS.tradeClosedBanner}" hidden></div>
 
               <div class="field">
-                <label for="shares-input-field">${TEXT.stock.sharesLabel}</label>
+                <label for="shares-input-field">${driftLabel(TEXT.stock.sharesLabel)}</label>
                 <div class="row">
                   <button type="button" class="btn btn-step" data-testid="${TEST_IDS.sharesMinus}"
                           aria-label="${TEXT.stock.oneLess}">&minus;</button>
@@ -210,7 +229,7 @@ function pageHtml() {
               </div>
 
               <button type="button" class="btn btn-accent btn-block" data-testid="${TEST_IDS.tradeSubmit}">
-                ${buyButtonText(1, stock.symbol)}
+                ${tradeButtonText('buy', 1, stock.symbol)}
               </button>
               <p class="error-text" role="alert" data-testid="${TEST_IDS.tradeError}"></p>
               <p class="muted small">${TEXT.stock.tradeNote}</p>
@@ -235,7 +254,7 @@ function pageHtml() {
       <div class="dialog-rows" id="confirm-rows"></div>
       <div class="dialog-actions">
         <button type="button" class="btn" data-testid="${TEST_IDS.confirmCancel}">${TEXT.common.cancel}</button>
-        <button type="button" class="btn btn-accent" data-testid="${TEST_IDS.confirmOk}">${TEXT.stock.confirmBuy}</button>
+        <button type="button" class="btn btn-accent" data-testid="${TEST_IDS.confirmOk}">${driftLabel(TEXT.stock.confirmBuy)}</button>
       </div>
     </dialog>
   `;
@@ -270,7 +289,7 @@ function updateSummary(nowMs = Date.now()) {
 
   pick(TEST_IDS.summaryShares).textContent = `× ${shares}`;
 
-  const totalCents = shares * priceCents;
+  const totalCents = mode === 'buy' ? buyCostCents(shares, priceCents) : shares * priceCents;
   const totalNode = pick(TEST_IDS.summaryTotal);
   totalNode.setAttribute('data-cents', String(totalCents));
   totalNode.textContent = formatMoney(totalCents);
@@ -283,8 +302,11 @@ function updateSummary(nowMs = Date.now()) {
   document.getElementById('summary-total-label').textContent =
     mode === 'buy' ? TEXT.stock.summaryTotalBuy : TEXT.stock.summaryTotalSell;
 
-  const label = mode === 'buy' ? buyButtonText : sellButtonText;
-  pick(TEST_IDS.tradeSubmit).textContent = label(parsed.ok ? parsed.shares : shares, stock.symbol);
+  pick(TEST_IDS.tradeSubmit).textContent = tradeButtonText(
+    mode,
+    parsed.ok ? parsed.shares : shares,
+    stock.symbol,
+  );
 
   pick(TEST_IDS.sharesMax).textContent = maxButtonText(currentMaxShares(priceCents));
 }
@@ -396,7 +418,7 @@ function setMode(nextMode) {
 
   const confirmOk = pick(TEST_IDS.confirmOk);
   confirmOk.className = nextMode === 'buy' ? 'btn btn-accent' : 'btn btn-sell';
-  confirmOk.textContent = nextMode === 'buy' ? TEXT.stock.confirmBuy : TEXT.stock.confirmSell;
+  confirmOk.textContent = driftLabel(nextMode === 'buy' ? TEXT.stock.confirmBuy : TEXT.stock.confirmSell);
 
   clearError();
   updateSummary();
@@ -412,7 +434,7 @@ function setChartRange(range) {
 function checkNow(nowMs) {
   const priceCents = priceNowCents(stock, nowMs);
   const common = { sharesRaw: sharesFieldValue(), priceCents, account, symbol: stock.symbol, nowMs };
-  const result = mode === 'buy' ? checkBuy(common) : checkSell(common);
+  const result = mode === 'buy' ? checkBuy({ ...common, costOf: buyCostCents }) : checkSell(common);
   return { result, priceCents };
 }
 
@@ -448,11 +470,12 @@ function openConfirm() {
   const rows = document.getElementById('confirm-rows');
 
   if (mode === 'buy') {
+    const costCents = buyCostCents(shares, priceCents);
     pick(TEST_IDS.confirmTitle).textContent = confirmBuyTitle(shares, stock.symbol);
     rows.innerHTML = `
       <div class="dialog-row"><span class="muted">${TEXT.stock.confirmPrice}</span><span data-cents="${priceCents}">${formatMoney(priceCents)}</span></div>
       <div class="dialog-row"><span class="muted">${TEXT.stock.confirmShares}</span><span>&times; ${shares}</span></div>
-      <div class="dialog-row"><span class="muted">${TEXT.stock.confirmTotal}</span><span data-cents="${shares * priceCents}">${formatMoney(shares * priceCents)}</span></div>
+      <div class="dialog-row"><span class="muted">${TEXT.stock.confirmTotal}</span><span data-cents="${costCents}">${formatMoney(costCents)}</span></div>
     `;
   } else {
     const gainCents = sellGainPreviewCents(account, stock.symbol, shares, priceCents);
@@ -502,7 +525,13 @@ function confirmTrade() {
   let detail = '';
 
   if (mode === 'buy') {
-    const done = applyBuy(account, { symbol: stock.symbol, shares, priceCents, nowMs });
+    const done = applyBuy(account, {
+      symbol: stock.symbol,
+      shares,
+      priceCents,
+      nowMs,
+      costCents: buyCostCents(shares, priceCents),
+    });
     account = writeAccount(session.user.email, done.account);
     title = boughtTitle(shares, stock.symbol);
     detail = boughtDetail(formatMoney(done.costCents), formatMoney(done.cashAfterCents));
@@ -580,9 +609,7 @@ async function buildPage() {
 
   let stocks;
   try {
-    const response = await fetch('/data/stocks.json');
-    if (!response.ok) throw new Error('Could not load stocks');
-    stocks = await response.json();
+    stocks = await loadStocks();
   } catch (error) {
     stock = null;
     renderLoadError();
@@ -600,6 +627,7 @@ async function buildPage() {
   }
 
   document.getElementById('page').innerHTML = pageHtml();
+  applyLayoutDrift();
   menu = renderTopMenu({ page: 'market', user: session.user, account });
 
   chart = createPriceChart(TEST_IDS.priceChart);
@@ -609,6 +637,9 @@ async function buildPage() {
   setMode(queryValue('mode').toLowerCase() === 'sell' ? 'sell' : 'buy');
   refresh();
   startRefresh();
+
+  // drift=popup: the Pro dialog, once per browser tab.
+  startPromoDialog();
 }
 
 async function start() {

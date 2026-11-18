@@ -3,7 +3,6 @@
 
 import {
   TEXT,
-  addButtonText,
   addedSoFarText,
   addedWithCardMessage,
   historyBought,
@@ -17,6 +16,8 @@ import {
   pageButtonLabel,
 } from '../ui-text.js';
 import { TEST_IDS } from '../test-ids.js';
+import { addMoneyButtonText } from '../drift.js';
+import { isBugOn } from '../test-switches.js';
 import { requireSession } from '../app-session.js';
 import { renderTopMenu } from '../top-menu.js';
 import { writeAccount, resetAccount, readAccount } from '../account-storage.js';
@@ -57,6 +58,15 @@ let filterState = { ...DEFAULT_STATE };
 
 // Every row that matches the filters, all pages. The CSV uses these.
 let filteredRows = [];
+
+// bug=limit: the $50,000 limit lets one more top-up through, so the account
+// can reach $60,000 in all. The note and the progress bar keep saying
+// $50,000, so only a test that checks the numbers catches it.
+const BUGGY_ADD_LIMIT_CENTS = 6000000;
+
+function addLimitCents() {
+  return isBugOn('limit') ? BUGGY_ADD_LIMIT_CENTS : ADD_LIMIT_CENTS;
+}
 
 const CHOICES = [
   { cents: 100000, label: TEXT.wallet.choice1000, testId: TEST_IDS.addAmount1000 },
@@ -109,7 +119,7 @@ function shellHtml() {
         <div class="radio-row">${CHOICES.map(choiceHtml).join('')}</div>
         <div>
           <button type="button" class="btn btn-accent" data-testid="${TEST_IDS.addSubmit}">
-            ${addButtonText(TEXT.wallet.choice5000)}
+            ${addMoneyButtonText(TEXT.wallet.choice5000)}
           </button>
         </div>
         <p class="muted small" id="added-so-far"></p>
@@ -412,7 +422,7 @@ function onPaymentMessage(event) {
 
   // Another tab may have added money since the card step opened.
   reloadAccount();
-  const check = checkAdd(account, choice.cents);
+  const check = checkAdd(account, choice.cents, addLimitCents());
   if (!check.ok) {
     closePayStep();
     drawAll();
@@ -466,7 +476,7 @@ function downloadCsv() {
 function wireAddMoney() {
   for (const choice of CHOICES) {
     pick(choice.testId).addEventListener('change', () => {
-      pick(TEST_IDS.addSubmit).textContent = addButtonText(selectedChoice().label);
+      pick(TEST_IDS.addSubmit).textContent = addMoneyButtonText(selectedChoice().label);
     });
   }
 
@@ -485,7 +495,7 @@ function wireAddMoney() {
     // the saved account is read again and checked before the card form opens.
     reloadAccount();
 
-    const check = checkAdd(account, choice.cents);
+    const check = checkAdd(account, choice.cents, addLimitCents());
     if (!check.ok) {
       closePayStep();
       drawAll();

@@ -24,6 +24,8 @@ Then open <http://localhost:8000>.
 Nothing to install. The local server has no clean URLs, so the app adds `.html` to its own
 links when the host is `localhost` or `127.0.0.1`.
 
+The local server shows every page, but **not the API**: `/api` only runs on Vercel.
+
 ## Deploy on Vercel
 
 1. Import the repo at <https://vercel.com/new>.
@@ -183,10 +185,29 @@ shares, history, watchlist and profile all stay — and the log in page says
 
 ## Test switches
 
-| Switch | What it does |
-| --- | --- |
-| `?seed=42` | Same prices every time. The seed is copied onto every link, so it survives page changes. |
-| `?market=closed` | Closes the market. Copied onto every link too, so it survives page changes. |
+A test switch is a value you put in the page link. Every switch is **off** unless the link
+turns it on, so a plain link behaves exactly as it always did. Switches are read once, when
+the page loads, and they are **copied onto every link and redirect**, so a switch stays on
+while you click around.
+
+The [Test switches page](/switches) ticks whatever your link already says, builds the link
+for you and copies it.
+
+| Switch | Values | What it does |
+| --- | --- | --- |
+| `?seed=42` | any text | Same prices and same news every time |
+| `?market=closed` | `closed` | Closes the market. You can look at prices, but not buy or sell |
+| `?slow=3000` | 0 to 10000 | Every data load waits that many milliseconds before it starts |
+| `?api=500` | `500` | Every data load fails as if the server answered 500 |
+| `?flaky=on` | `on` | About 1 load in 3 fails; the rest wait 0 to 2 seconds. The seed decides |
+| `?bug=cost,gain,limit,sort,search` | one or more | Turns on those bugs |
+| `?drift=text,ids,layout,popup` | one or more, or `all` | Renames labels, changes test ids, moves parts, shows popups |
+
+Anything else in the link is ignored, and so is a value the switch does not understand.
+
+When any switch is on, a thin bar sits at the very top of every page: *Test switches on:
+flaky, bug=cost.* with a **Change** link back to the Test switches page. With no switches
+there is no bar in the page at all.
 
 Prices move one step every 5 seconds, from 00:00 Dhaka time, 17,280 steps a day, every day
 of the week. With the same seed, the same day and the same time, every computer shows the
@@ -194,6 +215,106 @@ same price. Without a seed the app uses `tradeloom`.
 
 The market is open all day, every day. It is closed only while the link carries
 `?market=closed`; then you can look at prices but you cannot buy or sell.
+
+### Slow, broken and flaky loads
+
+Every data load in the app — the stock list, the account list and the news templates — goes
+through `js/data-loader.js`, so these three switches work everywhere. The waits use
+`setTimeout`, so Playwright's Clock API controls them, and `slow` and `flaky` add up.
+
+The loading states and the error boxes that are already in the app are what show: the
+skeleton bars on the Market page, **Couldn't load prices** with **Try again**, and so on.
+**Try again** counts as a new load, so with `flaky=on` it may work and with `api=500` it
+fails again.
+
+One load is left alone by `api` and `flaky`: the **account list** the page guard reads to
+find out who is logged in. Without that one exception a broken server would bounce every
+page back to the log in page and the error boxes could never be seen. `slow` still applies
+to it, and logging in on the log in page fails like everything else.
+
+### The 5 bugs
+
+Each bug is small, realistic and changes nothing else. **No text changes**, so only a test
+that checks the values catches it.
+
+| Switch | Where | The bug |
+| --- | --- | --- |
+| `bug=cost` | Stock page, buying | For 2 or more shares the total cost and the money taken are one share too high. The summary, the confirm box, the success message and the cash all agree with the wrong number |
+| `bug=gain` | Portfolio | Every holding's gain, and the total gain, show with the wrong sign |
+| `bug=limit` | Wallet | The $50,000 top-up limit lets one more top-up through, up to $60,000 in total |
+| `bug=sort` | Portfolio | **Sort by gain** puts the smallest gain first |
+| `bug=search` | Market | The search box only matches when the letter case is exact, so `kryl` finds nothing |
+
+### The 4 drifts
+
+Drift makes the app look like a newer version where things were renamed or moved, for
+practising self-healing tests. Messages and error texts never change, and `drift=all` turns
+on all four.
+
+`drift=text` renames eleven labels, and nothing else:
+
+| Today | With drift |
+| --- | --- |
+| Log in | Sign in |
+| Log out | Sign out |
+| Market (menu link) | Stocks |
+| Search stocks | Find a stock |
+| How many shares? | Quantity |
+| Buy 5 KRYL | Place buy order |
+| Sell 5 KRYL | Place sell order |
+| Confirm buy | Yes, buy |
+| Confirm sell | Yes, sell |
+| Add $5,000 | Top up $5,000 |
+| Save changes | Update profile |
+
+`drift=ids` turns every `data-testid` into `tl-` plus the old id with its hyphens changed to
+underscores, so `login-submit` becomes `tl-login_submit`. It reaches the ids inside the news
+box's shadow root and inside the payment frame too.
+
+`drift=layout` moves three things: the trade box goes to the left of the chart on the Stock
+page, **Wallet** goes in front of **Portfolio** in the top menu, and the three number cards
+on the Market page come out in reverse order. Same elements, same text, same ids.
+
+`drift=popup` shows two popups, each once per browser tab. Two seconds after the first
+logged-in page, a **cookie banner** slides up and covers the lower part of the page
+(*We use cookies to remember your settings.*, **Accept** and **Reject**). On the first visit
+to a Stock page, a `<dialog>` opens on top (**Try Tradeloom Pro**, **No thanks** and
+**Learn more**). Both really block clicks, which is what `page.addLocatorHandler` is for.
+
+**The Test switches page is never drifted**, so there is always a way back.
+
+## The API
+
+`/api` is a small set of server functions, for API testing. The pages never use it. There is
+still no database: the answers come from the same JSON files and the same price and news
+engines the pages use, so the same seed and the same time give the same answer on both
+sides. The root `package.json` only says `{ "private": true, "type": "module" }` — there are
+no dependencies and no build step.
+
+**The API only runs on Vercel.** `python -m http.server` serves the pages but not `/api`.
+
+Every answer is JSON with `Content-Type: application/json`, `Cache-Control: no-store` and
+`Access-Control-Allow-Origin: *`. Errors look like `{ "error": "<plain sentence>" }`. A
+wrong method gives **405** with an `Allow` header. `?seed=` works like it does in the app,
+`?at=` takes an ISO time or a number of milliseconds and defaults to now, and the `slow`,
+`api` and `flaky` switches work here too.
+
+| Method and address | Answer |
+| --- | --- |
+| `GET /api/health` | `200` `{ "status": "ok", "version": "1.6.0" }` |
+| `GET /api/stocks` | `200` a list of `{ symbol, name, about }` for all 8 stocks |
+| `GET /api/prices?seed=42&at=…` | `200` a list of `{ symbol, priceCents, openCents, changeCents, changePercent, at }` |
+| `GET /api/prices/KRYL?seed=42&at=…` | `200` one of those. An unknown symbol gives `404` |
+| `GET /api/news?seed=42&at=…&stock=KRYL&limit=10&offset=0` | `200` `{ total, items: [{ id, stock, headline, summary, time }] }`. `limit` is 1 to 60 and defaults to 10 |
+| `POST /api/login` with `{ email, password }` | `200` `{ email, displayName, token }`. A wrong pair gives `401`, a missing field or broken JSON gives `400` |
+
+The token is `demo-` plus a short made-up string, worked out from the seed and the email.
+It is only for practice: nothing checks it.
+
+## Changelog
+
+[/changelog](/changelog) lists every version of Tradeloom, newest first. A small **v1.6.0**
+link to it sits on the Rules page and the Test switches page, and nowhere else.
 
 ## Pages
 
@@ -206,6 +327,8 @@ The market is open all day, every day. It is closed only while the link carries
 - `/receipt?id=h3` one receipt from your history, printable, in its own tab
 - `/profile` your photo, details, account ID and theme
 - `/rules` every rule the app follows
+- `/switches` turn test switches on and off, and copy the link
+- `/changelog` every version of Tradeloom, newest first
 
 Every rule the app follows is written on the [Rules page](/rules). If the app does
 something different, that is a bug.

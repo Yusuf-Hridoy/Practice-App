@@ -4,6 +4,7 @@ import { toastTitle, toastDetail } from './ui-text.js';
 import { formatMoney } from './money-format.js';
 import { dhakaIsoString } from './market-hours.js';
 import { priceNowCents } from './price-engine.js';
+import { loadStocks } from './data-loader.js';
 import { readWatchlist, writeWatchlist } from './watchlist-storage.js';
 import { isAlertHit, directionWord } from './watchlist-rules.js';
 import { showToast } from './toast-messages.js';
@@ -73,11 +74,7 @@ export function startAlertChecker(user) {
     checkAlertsOnce(user, stocks);
   }
 
-  fetch('/data/stocks.json')
-    .then((response) => {
-      if (!response.ok) throw new Error('Could not load stocks');
-      return response.json();
-    })
+  loadStocks()
     .then((loaded) => {
       stocks = loaded;
       check();

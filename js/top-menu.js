@@ -12,6 +12,7 @@ import { startConnectionStatus } from './connection-status.js';
 import { startIdleTimer } from './idle-timer.js';
 import { readProfile } from './profile-storage.js';
 import { initialsFrom } from './profile-rules.js';
+import { driftLabel, isLayoutDrift, startCookieBanner } from './drift.js';
 
 export function logoHtml(linkTo = 'market') {
   return `
@@ -36,6 +37,27 @@ export function marketStatusHtml() {
 function menuLinkHtml(page, label, testId, currentPage) {
   const current = page === currentPage ? ' aria-current="page"' : '';
   return `<a class="menu-link" data-testid="${testId}" href="${href(page)}"${current}>${label}</a>`;
+}
+
+// The six links of the main menu, in the order they are drawn. Only the
+// Market link is renamed by drift=text; the rest pass through unchanged.
+function menuLinks() {
+  const links = [
+    { page: 'market', label: TEXT.menu.market, testId: TEST_IDS.menuLinkMarket },
+    { page: 'portfolio', label: TEXT.menu.portfolio, testId: TEST_IDS.menuLinkPortfolio },
+    { page: 'watchlist', label: TEXT.menu.watchlist, testId: TEST_IDS.menuLinkWatchlist },
+    { page: 'news', label: TEXT.menu.news, testId: TEST_IDS.menuLinkNews },
+    { page: 'wallet', label: TEXT.menu.wallet, testId: TEST_IDS.menuLinkWallet },
+    { page: 'rules', label: TEXT.menu.rules, testId: TEST_IDS.menuLinkRules },
+  ];
+
+  // drift=layout: Wallet moves in front of Portfolio. Same links, same ids.
+  if (!isLayoutDrift()) return links;
+  const wallet = links.find((link) => link.page === 'wallet');
+  const rest = links.filter((link) => link.page !== 'wallet');
+  const at = rest.findIndex((link) => link.page === 'portfolio');
+  rest.splice(at, 0, wallet);
+  return rest;
 }
 
 // The accessible name of the circle. When the initials show, they are the
@@ -73,12 +95,9 @@ export function renderTopMenu({ page, user, account }) {
       <div class="menu-left">
         ${logoHtml('market')}
         <nav class="menu-left" aria-label="${TEXT.menu.navLabel}">
-          ${menuLinkHtml('market', TEXT.menu.market, TEST_IDS.menuLinkMarket, page)}
-          ${menuLinkHtml('portfolio', TEXT.menu.portfolio, TEST_IDS.menuLinkPortfolio, page)}
-          ${menuLinkHtml('watchlist', TEXT.menu.watchlist, TEST_IDS.menuLinkWatchlist, page)}
-          ${menuLinkHtml('news', TEXT.menu.news, TEST_IDS.menuLinkNews, page)}
-          ${menuLinkHtml('wallet', TEXT.menu.wallet, TEST_IDS.menuLinkWallet, page)}
-          ${menuLinkHtml('rules', TEXT.menu.rules, TEST_IDS.menuLinkRules, page)}
+          ${menuLinks()
+            .map((link) => menuLinkHtml(link.page, driftLabel(link.label), link.testId, page))
+            .join('')}
         </nav>
       </div>
       <div class="menu-right">
@@ -90,7 +109,7 @@ export function renderTopMenu({ page, user, account }) {
         </a>
         ${avatarHtml(readProfile(user.email, user.profileStart), user, page)}
         <button type="button" class="btn btn-small" data-testid="${TEST_IDS.logoutButton}">
-          ${TEXT.menu.logout}
+          ${driftLabel(TEXT.menu.logout)}
         </button>
       </div>
     </div>
@@ -119,6 +138,9 @@ export function renderTopMenu({ page, user, account }) {
   startKeyboardShortcuts(page);
   startConnectionStatus();
   startIdleTimer();
+
+  // drift=popup: the cookie banner, once per browser tab.
+  startCookieBanner();
 
   return {
     setCash(cents) {
@@ -151,7 +173,7 @@ export function renderLoggedOutMenu() {
     <div class="top-menu-inner">
       <div class="menu-left">${logoHtml('login')}</div>
       <div class="menu-right">
-        <a class="btn btn-small" href="${href('login')}">${TEXT.common.login}</a>
+        <a class="btn btn-small" href="${href('login')}">${driftLabel(TEXT.common.login)}</a>
       </div>
     </div>
   `;

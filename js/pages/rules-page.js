@@ -4,6 +4,7 @@ import { TEXT } from '../ui-text.js';
 import { TEST_IDS } from '../test-ids.js';
 import { optionalSession } from '../app-session.js';
 import { renderTopMenu, renderLoggedOutMenu } from '../top-menu.js';
+import { href } from '../app-links.js';
 
 function ruleCardHtml(card) {
   return `
@@ -11,6 +12,15 @@ function ruleCardHtml(card) {
       <h2>${card.title}</h2>
       <p class="muted">${card.body}</p>
     </div>
+  `;
+}
+
+function switchRowHtml(row) {
+  return `
+        <div class="dialog-row">
+          <span><code>${row.name}</code></span>
+          <span class="muted">${row.body}</span>
+        </div>
   `;
 }
 
@@ -26,12 +36,18 @@ function pageHtml() {
 
       <div class="card stack-sm" data-testid="${TEST_IDS.rulesCard}" data-rule="test-switches">
         <h2>${TEXT.rules.switchesTitle}</h2>
-        <div class="dialog-row">
-          <span><code>${TEXT.rules.switchName}</code></span>
-          <span class="muted">${TEXT.rules.switchBody}</span>
-        </div>
+        ${TEXT.rules.switchList.map(switchRowHtml).join('')}
         <p class="muted small">${TEXT.rules.switchesNote}</p>
+        <p>
+          <a class="btn btn-small" data-testid="${TEST_IDS.rulesSwitchesLink}" href="${href('switches')}">
+            ${TEXT.rules.switchesLink}
+          </a>
+        </p>
       </div>
+
+      <p class="muted small">
+        <a data-testid="${TEST_IDS.versionLink}" href="${href('changelog')}">${TEXT.changelog.versionLabel}</a>
+      </p>
     </div>
   `;
 }

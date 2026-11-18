@@ -2,6 +2,7 @@
 
 import {
   loadDemoUsers,
+  loadSessionUsers,
   findDemoUser,
   readSession,
   writeSession,
@@ -19,7 +20,13 @@ export async function attemptLogin(emailRaw, passwordRaw) {
     return { ok: false, error: TEXT.login.missingFields };
   }
 
-  const users = await loadDemoUsers();
+  let users;
+  try {
+    users = await loadDemoUsers();
+  } catch (error) {
+    return { ok: false, error: TEXT.login.checkFailed };
+  }
+
   const user = findDemoUser(users, email);
   if (!user || user.password !== password) {
     return { ok: false, error: TEXT.login.wrongPair };
@@ -58,7 +65,7 @@ export async function requireSession() {
     return null;
   }
 
-  const users = await loadDemoUsers();
+  const users = await loadSessionUsers();
   const user = findDemoUser(users, session.email);
   if (!user) {
     clearSession();
@@ -73,7 +80,7 @@ export async function requireSession() {
 export async function optionalSession() {
   const session = readSession();
   if (!session) return null;
-  const users = await loadDemoUsers();
+  const users = await loadSessionUsers();
   const user = findDemoUser(users, session.email);
   if (!user) {
     clearSession();

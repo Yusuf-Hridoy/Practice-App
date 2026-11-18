@@ -861,3 +861,74 @@ tradeloom-news { display: block; }
   .back-to-top { left: 16px; bottom: 16px; }
   .login-bar { padding: 10px 16px; }
 }
+
+/* ---------- test switches ---------- */
+
+.switch-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 24px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  font-size: 13px;
+}
+
+.switch-bar a { color: var(--link); }
+
+.link-box {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-raised);
+  overflow-wrap: anywhere;
+}
+
+.link-box code { font-size: 13px; }
+
+.plain-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+
+/* The idle countdown, with and without the drift=ids switch. */
+.idle-text [data-testid="tl-idle_countdown"] { color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* drift=layout on the stock page: the trade box sits on the left, and the
+   chart keeps the wider column. */
+.grid-2-1.grid-flip { grid-template-columns: 1fr 1.4fr; }
+
+/* ---------- drift=popup ---------- */
+
+@keyframes cookie-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.cookie-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 45vh;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 16px;
+  background: var(--surface-raised);
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  animation: cookie-slide-up 200ms ease-out;
+}
+
+.cookie-line { margin: 0; max-width: 480px; text-align: center; }
+
+@media (max-width: 700px) {
+  .grid-2-1.grid-flip { grid-template-columns: 1fr; }
+  .switch-bar { padding: 8px 16px; }
+  .cookie-banner { height: 50vh; }
+}

@@ -9,6 +9,7 @@ import {
   removeStarLabel,
 } from '../ui-text.js';
 import { TEST_IDS } from '../test-ids.js';
+import { loadStocks } from '../data-loader.js';
 import { href } from '../app-links.js';
 import { requireSession } from '../app-session.js';
 import { renderTopMenu } from '../top-menu.js';
@@ -21,6 +22,8 @@ import { readWatchlist, changeWatchlist } from '../watchlist-storage.js';
 import { addSymbol, removeSymbol, isOnWatchlist } from '../watchlist-rules.js';
 import { isOffline, CONNECTION_CHANGED } from '../connection-status.js';
 import { NEWS_BOX_TAG } from '../components/news-box.js';
+import { driftLabel, isLayoutDrift } from '../drift.js';
+import { isBugOn } from '../test-switches.js';
 
 const REFRESH_MS = 5000;
 
@@ -32,25 +35,46 @@ let activeFilter = 'all';
 let refreshTimer = null;
 let watchlist = { symbols: [], alerts: {} };
 
+// The three number cards at the top. drift=layout shows them back to front:
+// same cards, same text, same ids, other way round.
+function statCardsHtml() {
+  const cards = [
+    `<div class="card">
+          <div class="stat-label">${TEXT.market.statTotalWorth}</div>
+          <div class="stat-value" data-testid="${TEST_IDS.statTotalWorth}" data-cents="0">-</div>
+        </div>`,
+    `<div class="card">
+          <div class="stat-label">${TEXT.market.statToday}</div>
+          <div class="stat-value" data-testid="${TEST_IDS.statToday}" data-cents="0">-</div>
+          <div class="stat-note">${TEXT.market.statTodayNote}</div>
+        </div>`,
+    `<div class="card">
+          <div class="stat-label">${TEXT.market.statCash}</div>
+          <div class="stat-value" data-testid="${TEST_IDS.statCash}" data-cents="0">-</div>
+        </div>`,
+  ];
+  const order = isLayoutDrift() ? cards.slice().reverse() : cards;
+  return order.join('');
+}
+
+// bug=search: the search box only matches when the letter case is exact,
+// so "kryl" finds nothing.
+function matchesSearch(stock, searchValue) {
+  if (searchValue === '') return true;
+  if (isBugOn('search')) {
+    return stock.symbol.includes(searchValue) || stock.name.includes(searchValue);
+  }
+  const text = searchValue.toLowerCase();
+  return stock.symbol.toLowerCase().includes(text) || stock.name.toLowerCase().includes(text);
+}
+
 function shellHtml() {
   return `
     <div class="wrap stack">
       <div class="box box-warn" data-testid="${TEST_IDS.marketClosedBanner}" hidden></div>
 
       <div class="grid-3">
-        <div class="card">
-          <div class="stat-label">${TEXT.market.statTotalWorth}</div>
-          <div class="stat-value" data-testid="${TEST_IDS.statTotalWorth}" data-cents="0">-</div>
-        </div>
-        <div class="card">
-          <div class="stat-label">${TEXT.market.statToday}</div>
-          <div class="stat-value" data-testid="${TEST_IDS.statToday}" data-cents="0">-</div>
-          <div class="stat-note">${TEXT.market.statTodayNote}</div>
-        </div>
-        <div class="card">
-          <div class="stat-label">${TEXT.market.statCash}</div>
-          <div class="stat-value" data-testid="${TEST_IDS.statCash}" data-cents="0">-</div>
-        </div>
+        ${statCardsHtml()}
       </div>
 
       <h1>${TEXT.market.title}</h1>
@@ -58,7 +82,7 @@ function shellHtml() {
       <div class="grid-2-1">
       <div class="card stack-sm">
         <div class="field">
-          <label for="market-search-input">${TEXT.market.searchLabel}</label>
+          <label for="market-search-input">${driftLabel(TEXT.market.searchLabel)}</label>
           <input type="search" id="market-search-input" data-testid="${TEST_IDS.marketSearch}"
                  placeholder="${TEXT.market.searchPlaceholder}" autocomplete="off">
         </div>
@@ -213,15 +237,12 @@ function searchText() {
 }
 
 function applyFilters() {
-  const text = searchText().toLowerCase();
+  const typed = searchText();
   let shown = 0;
 
   for (const stock of stocks) {
     const parts = rowParts.get(stock.symbol);
-    const matchesText =
-      text === '' ||
-      stock.symbol.toLowerCase().includes(text) ||
-      stock.name.toLowerCase().includes(text);
+    const matchesText = matchesSearch(stock, typed);
 
     let matchesFilter = true;
     if (activeFilter === 'up') matchesFilter = parts.changeCents > 0;
@@ -354,7 +375,7 @@ function wire() {
   document.querySelector(`[data-testid="${TEST_IDS.filterDown}"]`).addEventListener('click', () => setFilter('down'));
   document.querySelector(`[data-testid="${TEST_IDS.filterOwned}"]`).addEventListener('click', () => setFilter('owned'));
 
-  document.querySelector(`[data-testid="${TEST_IDS.marketRetry}"]`).addEventListener('click', loadStocks);
+  document.querySelector(`[data-testid="${TEST_IDS.marketRetry}"]`).addEventListener('click', loadMarketStocks);
 
   window.addEventListener(CONNECTION_CHANGED, (event) => {
     if (event.detail.offline) stopRefresh();
@@ -365,7 +386,7 @@ function wire() {
   });
 }
 
-async function loadStocks() {
+async function loadMarketStocks() {
   const errorBox = document.querySelector(`[data-testid="${TEST_IDS.marketError}"]`);
   const loadingBox = document.querySelector(`[data-testid="${TEST_IDS.marketLoading}"]`);
 
@@ -373,9 +394,7 @@ async function loadStocks() {
   loadingBox.hidden = false;
 
   try {
-    const response = await fetch('/data/stocks.json');
-    if (!response.ok) throw new Error('Could not load stocks');
-    stocks = await response.json();
+    stocks = await loadStocks();
   } catch (error) {
     loadingBox.hidden = true;
     document.getElementById('market-table-box').hidden = true;
@@ -402,7 +421,7 @@ async function start() {
   document.getElementById('page').innerHTML = shellHtml();
   renderTopMenu({ page: 'market', user: session.user, account });
   wire();
-  await loadStocks();
+  await loadMarketStocks();
 }
 
 start();

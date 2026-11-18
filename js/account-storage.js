@@ -1,6 +1,8 @@
 // Reads and writes the session and the account (cash, shares, history) in localStorage.
 // Bad or missing data is replaced with the account's start block. It never crashes.
 
+import { loadJson, DEMO_USERS_PATH } from './data-loader.js';
+
 export const SESSION_KEY = 'tradeloom.session';
 export const ACCOUNT_KEY_PREFIX = 'tradeloom.account.';
 
@@ -39,16 +41,37 @@ export function accountKey(email) {
 
 // --- demo users ---
 
+let demoUsers = null;
 let demoUsersPromise = null;
 
-export function loadDemoUsers() {
+// A load that worked is kept. A load that failed is not, so trying again
+// really does try again.
+function fetchDemoUsers(options) {
+  if (demoUsers) return Promise.resolve(demoUsers);
   if (!demoUsersPromise) {
-    demoUsersPromise = fetch('/data/demo-users.json').then((response) => {
-      if (!response.ok) throw new Error('Could not load demo users');
-      return response.json();
-    });
+    demoUsersPromise = loadJson(DEMO_USERS_PATH, 'Could not load demo users', options)
+      .then((users) => {
+        demoUsers = users;
+        demoUsersPromise = null;
+        return users;
+      })
+      .catch((error) => {
+        demoUsersPromise = null;
+        throw error;
+      });
   }
   return demoUsersPromise;
+}
+
+export function loadDemoUsers() {
+  return fetchDemoUsers({});
+}
+
+// What the page guard reads. See the note in js/data-loader.js: this one load
+// is left alone by the api and flaky switches, so a broken server still lets
+// you reach a page and see its own error box.
+export function loadSessionUsers() {
+  return fetchDemoUsers({ canFail: false });
 }
 
 export function findDemoUser(users, email) {

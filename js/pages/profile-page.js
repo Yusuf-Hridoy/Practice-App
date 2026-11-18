@@ -4,6 +4,7 @@ import { TEXT, problemsMessage } from '../ui-text.js';
 import { TEST_IDS } from '../test-ids.js';
 import { requireSession } from '../app-session.js';
 import { renderTopMenu } from '../top-menu.js';
+import { driftLabel } from '../drift.js';
 import {
   readProfile,
   changeProfile,
@@ -177,7 +178,7 @@ function pageHtml(nowMs) {
 
             <div>
               <button type="submit" class="btn btn-accent" data-testid="${TEST_IDS.saveChanges}">
-                ${TEXT.profile.save}
+                ${driftLabel(TEXT.profile.save)}
               </button>
             </div>
 

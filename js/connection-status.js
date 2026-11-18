@@ -25,7 +25,11 @@ function bannerNode() {
   banner.setAttribute('role', 'alert');
   banner.textContent = TEXT.connection.offlineBanner;
   banner.hidden = true;
-  document.body.prepend(banner);
+
+  // The test switch bar, when there is one, stays at the very top.
+  const switchBar = document.querySelector('.switch-bar');
+  if (switchBar) switchBar.after(banner);
+  else document.body.prepend(banner);
   return banner;
 }
 

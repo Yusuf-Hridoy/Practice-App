@@ -2,6 +2,8 @@
 
 import { TEXT, sharesWord, portfolioEmptyBody, gainPercentNote, paidNote, allocationLegendItem } from '../ui-text.js';
 import { TEST_IDS } from '../test-ids.js';
+import { loadStocks } from '../data-loader.js';
+import { isBugOn } from '../test-switches.js';
 import { href } from '../app-links.js';
 import { requireSession } from '../app-session.js';
 import { renderTopMenu } from '../top-menu.js';
@@ -29,6 +31,13 @@ let stocks = [];
 let owned = [];
 let rowParts = new Map();
 let allocParts = new Map();
+
+// bug=gain: every gain is shown with the wrong sign, so a profit reads as a
+// loss and a loss reads as a profit. Only what is shown changes; the real
+// gain is what the sort still uses.
+function shownGainCents(gainCents) {
+  return isBugOn('gain') ? -gainCents : gainCents;
+}
 
 function statCardHtml(label, testId, note) {
   return `
@@ -231,6 +240,7 @@ function refresh() {
     const avg = averagePaidCents(holding);
     const worth = holding.shares * price;
     const gain = holdingGainCents(holding, price);
+    const shownGain = shownGainCents(gain);
 
     parts.shares.textContent = sharesWord(holding.shares);
 
@@ -243,10 +253,10 @@ function refresh() {
     parts.worth.setAttribute('data-cents', String(worth));
     parts.worth.textContent = formatMoney(worth);
 
-    parts.gain.setAttribute('data-cents', String(gain));
-    parts.gain.className = `right ${directionClass(gain)}`;
-    parts.gainMoney.textContent = `${formatSignedMoney(gain)} ${arrowFor(gain)}`.trim();
-    parts.gainPercent.textContent = formatPercent(gainPercent(gain, holding.totalPaidCents));
+    parts.gain.setAttribute('data-cents', String(shownGain));
+    parts.gain.className = `right ${directionClass(shownGain)}`;
+    parts.gainMoney.textContent = `${formatSignedMoney(shownGain)} ${arrowFor(shownGain)}`.trim();
+    parts.gainPercent.textContent = formatPercent(gainPercent(shownGain, holding.totalPaidCents));
 
     parts.gainCents = gain;
     parts.worthCents = worth;
@@ -254,7 +264,7 @@ function refresh() {
 
   const stocksWorth = stocksWorthCents(account, prices);
   const paid = totalPaidCents(account);
-  const totalGain = stocksWorth - paid;
+  const totalGain = shownGainCents(stocksWorth - paid);
   const worth = totalWorthCents(account, prices);
 
   setStat(TEST_IDS.statTotalWorth, worth, formatMoney(worth), TEXT.portfolio.statTotalWorthNote, '');
@@ -280,6 +290,8 @@ function sortRows() {
     const right = rowParts.get(b.symbol);
     if (how === 'value') return right.worthCents - left.worthCents;
     if (how === 'name') return a.name.localeCompare(b.name);
+    // bug=sort: Sort by gain puts the smallest gain first.
+    if (isBugOn('sort')) return left.gainCents - right.gainCents;
     return right.gainCents - left.gainCents;
   });
 
@@ -295,9 +307,7 @@ async function start() {
   renderTopMenu({ page: 'portfolio', user: session.user, account });
 
   try {
-    const response = await fetch('/data/stocks.json');
-    if (!response.ok) throw new Error('Could not load stocks');
-    stocks = await response.json();
+    stocks = await loadStocks();
   } catch (error) {
     stocks = [];
   }

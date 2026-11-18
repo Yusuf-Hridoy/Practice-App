@@ -1,7 +1,15 @@
 // Every data-testid used in the app lives here.
 // The app must not use any test id that is missing from this file.
+//
+// This is also the one place the drift=ids switch works. With that switch on,
+// every id below becomes "tl-" plus the id with its hyphens turned into
+// underscores, so login-submit becomes tl-login_submit. Everything that draws
+// an id reads it from TEST_IDS, so the shadow root inside the news box and the
+// payment frame change with the rest.
 
-export const TEST_IDS = Object.freeze({
+import { isDriftOn } from './test-switches.js';
+
+const BASE_IDS = Object.freeze({
   // Top menu
   topMenu: 'top-menu',
   menuLinkMarket: 'menu-link-market',
@@ -277,4 +285,49 @@ export const TEST_IDS = Object.freeze({
   // Rules and 404
   rulesCard: 'rules-card',
   notFound: 'not-found',
+
+  // The bar at the top, when any test switch is on
+  switchBar: 'switch-bar',
+  switchBarChange: 'switch-bar-change',
+
+  // Test switches page
+  switchesSlow: 'switches-slow',
+  switchesApi: 'switches-api',
+  switchesFlaky: 'switches-flaky',
+  switchesBug: 'switches-bug',
+  switchesDrift: 'switches-drift',
+  switchesLink: 'switches-link',
+  switchesCopy: 'switches-copy',
+  switchesCopyStatus: 'switches-copy-status',
+  switchesOpen: 'switches-open',
+  switchesOff: 'switches-off',
+
+  // The surprise popups of the drift=popup switch
+  cookieBanner: 'cookie-banner',
+  cookieAccept: 'cookie-accept',
+  cookieReject: 'cookie-reject',
+  promoDialog: 'promo-dialog',
+  promoNoThanks: 'promo-no-thanks',
+  promoLearnMore: 'promo-learn-more',
+
+  // Changelog
+  changelogVersion: 'changelog-version',
+  versionLink: 'version-link',
+
+  // The link from the Rules page to the Test switches page
+  rulesSwitchesLink: 'rules-switches-link',
 });
+
+// login-submit becomes tl-login_submit.
+export function driftTestId(id) {
+  return `tl-${id.replace(/-/g, '_')}`;
+}
+
+function buildTestIds() {
+  if (!isDriftOn('ids')) return BASE_IDS;
+  const drifted = {};
+  for (const [key, value] of Object.entries(BASE_IDS)) drifted[key] = driftTestId(value);
+  return Object.freeze(drifted);
+}
+
+export const TEST_IDS = buildTestIds();

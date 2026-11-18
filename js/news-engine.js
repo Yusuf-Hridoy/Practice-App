@@ -3,6 +3,7 @@
 // It uses the same seeded random helpers as the price engine. No Math.random().
 
 import { seedValue } from './app-links.js';
+import { loadJson, NEWS_TEMPLATES_PATH } from './data-loader.js';
 import { hashKey, mulberry32 } from './price-engine.js';
 import { dhakaParts, dhakaDateKey, dhakaClockText, DAY_MS } from './market-hours.js';
 import {
@@ -31,14 +32,22 @@ const HOUR_MS = 60 * MINUTE_MS;
 
 // --- the templates ---
 
+let templates = null;
 let templatesPromise = null;
 
 export function loadNewsTemplates() {
+  if (templates) return Promise.resolve(templates);
   if (!templatesPromise) {
-    templatesPromise = fetch('/data/news-templates.json').then((response) => {
-      if (!response.ok) throw new Error('Could not load news');
-      return response.json();
-    });
+    templatesPromise = loadJson(NEWS_TEMPLATES_PATH, 'Could not load news')
+      .then((loaded) => {
+        templates = loaded;
+        templatesPromise = null;
+        return loaded;
+      })
+      .catch((error) => {
+        templatesPromise = null;
+        throw error;
+      });
   }
   return templatesPromise;
 }
